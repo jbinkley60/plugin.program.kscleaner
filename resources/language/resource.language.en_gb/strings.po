@@ -1,0 +1,109 @@
+# Kodi Media Center language file
+# Addon Name: Autostop
+# Addon id: plugin.program.kscleaner
+# Addon Provider: Jeff B.
+msgid ""
+msgstr ""
+"Project-Id-Version: XBMC Addons\n"
+"Report-Msgid-Bugs-To: jeff@thebinks.com\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Jeff B.\n"
+"Language-Team: English"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_GB\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30300"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30301"
+msgid "TV Shows"
+msgstr ""
+
+msgctxt "#30302"
+msgid "Music Videos"
+msgstr ""
+
+msgctxt "#30303"
+msgid "Music"
+msgstr ""
+
+msgctxt "#30304"
+msgid "View Logs"
+msgstr ""
+
+msgctxt "#30305"
+msgid "Database Backup"
+msgstr ""
+
+msgctxt "#30306"
+msgid "Kodi Selective Cleaner"
+msgstr ""
+
+msgctxt "#30307"
+msgid "Feature not available yet"
+msgstr ""
+
+msgctxt "#30308"
+msgid "Kodi Selective Cleaner Error"
+msgstr ""
+
+msgctxt "#30309"
+msgid "Error connecting to the Kodi databases."
+msgstr ""
+
+msgctxt "#30310"
+msgid "See Kodi.log file for details."
+msgstr ""
+
+msgctxt "#30311"
+msgid "No Kodi Selective Cleaner logs found."
+msgstr ""
+
+msgctxt "#30312"
+msgid "No Kodi Selective Cleaner logs found for the selected date."
+msgstr ""
+
+msgctxt "#30313"
+msgid "Kodi Selective Cleaner Most Recent Logs"
+msgstr ""
+
+msgctxt "#30314"
+msgid "Select KS Cleaner Logs Date"
+msgstr ""
+
+msgctxt "#30315"
+msgid "KS Cleaner Logs for:  "
+msgstr ""
+
+msgctxt "#30316"
+msgid "Kodi Selective Cleaner Log Message"
+msgstr ""
+
+msgctxt "#30317"
+msgid "Export to CSV file"
+msgstr ""
+
+msgctxt "#30318"
+msgid "KS Cleaner database extract successful at: \n"
+msgstr ""
+
+msgctxt "#30319"
+msgid "KS Cleaner Database Export"
+msgstr ""
+
+msgctxt "#30320"
+msgid "KS Cleaner logs Database Export Error"
+msgstr ""
+
+msgctxt "#30321"
+msgid "Seasons"
+msgstr ""
+
+msgctxt "#30322"
+msgid "Episodes"
+msgstr ""
