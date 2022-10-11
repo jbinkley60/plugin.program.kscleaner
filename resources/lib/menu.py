@@ -8,6 +8,9 @@ from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printe
 from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature
 from resources.lib.logs import displayGenLogs
 from resources.lib.tvshows import displayTvshows
+from resources.lib.movies import displayMovieMenu
+from resources.lib.mvideos import displayMvideos
+from resources.lib.music import displayMmusic
 
 from datetime import datetime
 
@@ -50,11 +53,11 @@ def displayMenu():                                              # Display menu
             curpf = kmfile.execute('SELECT count (strAlbum) FROM album', )
             kmusic = curpf.fetchone()[0]                         # Get albums from music database
             if int(kmusic) > -1 :                                # If albums in music database
-                pselect.append(str(menuitem4)  + ' - ' + str(kmvideos) + ' records')
+                pselect.append(str(menuitem4)  + ' - ' + str(kmusic) + ' records')
 
-            curpf = kcfile.execute('SELECT kgGenDat FROM kscleanLog LIMIT 1', )
-            kslog = curpf.fetchone()                             # Get logs from logging database
-            if kslog:                                            # If logs in logging database
+            curpf = kcfile.execute('SELECT count (kgGenDat) FROM kscleanLog', )
+            kslog = curpf.fetchone()[0]                          # Get logs from logging database
+            if int(kslog) > -1:                                  # If logs in logging database
                 pselect.append(menuitem5)     
 
             pselect.append(menuitem6)
@@ -81,20 +84,20 @@ def displayMenu():                                              # Display menu
         if vdate < 0:                                            # User cancel
             break      
         elif menuitem1 in (pselect[vdate]):                      # Movies selected
-            nofeature()
-            #displayDupeLogs()
+            if kmovies > 0:
+                displayMovieMenu()
         elif menuitem2 in (pselect[vdate]):                      # TV Shows selected
-            #nofeature()
-            displayTvshows()
+            if ktvshows > 0:
+                displayTvshows()
         elif menuitem3 in (pselect[vdate]):                      # Music video selected
-            nofeature()
-            #displayGenLogs()
+            if kmvideos > 0:
+                displayMvideos()
         elif menuitem4 in (pselect[vdate]):                      # Music selected
-            nofeature()
-            #clearPerf()
+            if kmusic > 0:
+                displayMmusic()
         elif menuitem5 in (pselect[vdate]):                      # Logging selected
-            #nofeature() 
-            displayGenLogs()        
+            if kslog > 0: 
+                displayGenLogs()        
         elif menuitem6 in (pselect[vdate]):                      # Database selected
             nofeature() 
             #perfStats()

@@ -1,3 +1,6 @@
 0.0.1
 - Initial Matrix alpha release
+0.0.2
+- Some bug fixes 
+- Completed initial menu drill downs for all media types
 

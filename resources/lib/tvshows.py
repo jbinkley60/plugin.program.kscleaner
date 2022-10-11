@@ -45,7 +45,7 @@ def displayTvshows():                                              # Display men
         if vdate < 0:                                              # User cancel
             break      
         else:                                                      # TV Show selected
-            xbmc.log('KC Cleaner TV Show selection: ' + str(vdate) + ' ' + str(ktvshows[vdate][1]), xbmc.LOGDEBUG )
+            xbmc.log('KC Cleaner TV Show selection: ' + str(vdate) + ' ' + ktvshows[vdate][1], xbmc.LOGDEBUG )
             displaySeasons(ktvshows[vdate][0],ktvshows[vdate][1])
 
 
@@ -103,8 +103,7 @@ def displayEpisodes(sidshow, sseason):                              # Display me
                     pselect.append(episode[3] + ' - ' + episode[2])                          
  
             ddialog = xbmcgui.Dialog()    
-            vdate = ddialog.select(translate(30306) + ' - ' + translate(30322), pselect)
-            xbmc.log('Kodi selective cleaner episode selection is: ' + pselect[vdate], xbmc.LOGDEBUG)
+            vdate = ddialog.multiselect(translate(30306) + ' - ' + translate(30322), pselect)
             del curpf    
             kvfile.close()
         except Exception as e:
@@ -117,7 +116,8 @@ def displayEpisodes(sidshow, sseason):                              # Display me
             perfdialog.ok(translate(30308), dialog_text)
             break            
 
-        if vdate < 0:                                               # User cancel
+        if vdate == None:                                           # User cancel
             break      
         else:                                                       # Episodes selected
+            xbmc.log('Kodi selective cleaner episode selection is: ' + str(vdate), xbmc.LOGDEBUG)
             nofeature()
