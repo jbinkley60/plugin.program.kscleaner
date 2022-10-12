@@ -1,10 +1,10 @@
 0.0.1
 - Initial Matrix alpha release
 0.0.2
-- Some bug fixes 
+- Some bug fixes including the album counts being incorrect
 - Completed initial menu drill downs for all media types
 0.0.3
-- Some bug fixes including the album counts being incorrect
+- Some bug fixes 
 - Added full CSV export capability
-- Added support for textures dataabse
+- Added support for textures database
 
