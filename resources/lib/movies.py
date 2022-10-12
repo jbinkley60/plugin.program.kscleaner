@@ -25,7 +25,7 @@ def displayMovieMenu():                                             # Display me
                 pselect.append(mmovie[0])                          
  
             ddialog = xbmcgui.Dialog()    
-            vdate = ddialog.select(translate(30306) + ' - ' + translate(30323), pselect)
+            vdate = ddialog.select(translate(30306) + ' - ' + translate(30317), pselect)
             xbmc.log('Kodi selective cleaner movie menu selection is: ' + pselect[vdate], xbmc.LOGDEBUG)
             del curpf    
             kvfile.close()

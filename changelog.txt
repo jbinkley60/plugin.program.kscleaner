@@ -3,4 +3,8 @@
 0.0.2
 - Some bug fixes 
 - Completed initial menu drill downs for all media types
+0.0.3
+- Some bug fixes including the album counts being incorrect
+- Added full CSV export capability
+- Added support for textures dataabse
 

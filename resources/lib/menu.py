@@ -11,6 +11,7 @@ from resources.lib.tvshows import displayTvshows
 from resources.lib.movies import displayMovieMenu
 from resources.lib.mvideos import displayMvideos
 from resources.lib.music import displayMmusic
+from resources.lib.exports import selectExport
 
 from datetime import datetime
 
@@ -25,7 +26,8 @@ def displayMenu():                                              # Display menu
     menuitem3 = translate(30302)
     menuitem4 = translate(30303) 
     menuitem5 = translate(30304)
-    menuitem6 = translate(30305)    
+    menuitem6 = translate(30317)
+    menuitem7 = translate(30305)    
 
     while True:
         try:
@@ -37,23 +39,23 @@ def displayMenu():                                              # Display menu
             curpf = kvfile.execute('SELECT count (c00) FROM movie',)
             kmovies = curpf.fetchone()[0]                        # Get movies from video database
             if int(kmovies) > -1 :                               # If movies in video database
-                pselect.append(str(menuitem1)  + ' - ' + str(kmovies) + ' records')
+                pselect.append(str(menuitem1)  + '\t\t  -  ' + str(kmovies) + '  ' + translate(30327))
 
             #curpf = kvfile.execute('SELECT c00 FROM tvshow LIMIT 1', )
             curpf = kvfile.execute('SELECT count (c00) FROM tvshow',)
             ktvshows = curpf.fetchone()[0]                       # Get tvshows from video database
             if int(ktvshows) > -1 :                              # If tvshows in video database
-                pselect.append(str(menuitem2)  + ' - ' + str(ktvshows) + ' records')
+                pselect.append(str(menuitem2)  + '\t\t  -  ' + str(ktvshows) + '  ' + translate(30327))
 
             curpf = kvfile.execute('SELECT count (c00) FROM musicvideo', )
             kmvideos = curpf.fetchone()[0]                       # Get musicvideos from video database 
             if int(kmvideos) > -1 :                              # If musicvideos in video database
-                pselect.append(str(menuitem3)  + ' - ' + str(kmvideos) + ' records')
+                pselect.append(str(menuitem3)  + '\t  -  ' + str(kmvideos) + '  ' + translate(30327))
 
             curpf = kmfile.execute('SELECT count (strAlbum) FROM album', )
             kmusic = curpf.fetchone()[0]                         # Get albums from music database
             if int(kmusic) > -1 :                                # If albums in music database
-                pselect.append(str(menuitem4)  + ' - ' + str(kmusic) + ' records')
+                pselect.append(str(menuitem4)  + '\t\t  -  ' + str(kmusic) + '  ' + translate(30327))
 
             curpf = kcfile.execute('SELECT count (kgGenDat) FROM kscleanLog', )
             kslog = curpf.fetchone()[0]                          # Get logs from logging database
@@ -61,6 +63,7 @@ def displayMenu():                                              # Display menu
                 pselect.append(menuitem5)     
 
             pselect.append(menuitem6)
+            pselect.append(menuitem7)
 
             ddialog = xbmcgui.Dialog()    
             vdate = ddialog.select(translate(30306), pselect)
@@ -98,10 +101,11 @@ def displayMenu():                                              # Display menu
         elif menuitem5 in (pselect[vdate]):                      # Logging selected
             if kslog > 0: 
                 displayGenLogs()        
-        elif menuitem6 in (pselect[vdate]):                      # Database selected
+        elif menuitem6 in (pselect[vdate]):                      # CSV Export selected 
+            selectExport()
+        elif menuitem7 in (pselect[vdate]):                      # Backup selected
             nofeature() 
             #perfStats()
-
 
 checkKscleanDB()                                                #  Check Kscleaner logging database
 displayMenu()                                                   #  Display main menu

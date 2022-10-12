@@ -94,7 +94,7 @@ def displayEpisodes(sidshow, sseason):                              # Display me
             kvfile = openKodiDB()                                   # Open Kodi video database
             pselect = ['Delete All Episodes']
             curpf = kvfile.execute('select idEpisode, idFile, c00, c13 from episode WHERE idShow = ?     \
-            and idSeason = ?  ORDER BY c13 ASC', (sidshow, sseason,))
+            and idSeason = ?  ORDER BY CAST(c13 AS INTEGER) ASC', (sidshow, sseason,))
             kepisodes = curpf.fetchall()                            # Get TV Episodes from video database
             for episode in kepisodes:
                 if len(episode[2]) < 1:                              # Handle blank TV Episode names

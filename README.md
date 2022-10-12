@@ -9,9 +9,9 @@ and Music databases
 - Kodi 19 and 20 compatible.
 - Individually select data  in the Kodi video and music databases
 - Ability to multi-select records to delete.
-- Logging database to track all activities
-- Log viewer with CSV export capability
-- Selectvie database backups
+- Logging database to track all activities with Log Viewer
+- CSV export for Video, Music and Textures databases 
+- Selective Video, Music and Textures database backups
 
 
 <img src="resources/icon.png" width="40%">

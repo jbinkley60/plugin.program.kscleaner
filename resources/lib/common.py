@@ -52,6 +52,18 @@ def getmuDatabaseName():
     return ""  
 
 
+def getteDatabaseName():
+    installed_version = get_installedversion()
+    if installed_version == '18':
+        return "Textures13.db"
+    elif installed_version == '19':
+        return "Textures13.db"
+    elif installed_version == '20':
+        return "Textures13.db"
+       
+    return ""  
+
+
 def openKodiDB():                                   #  Open Kodi database
     try:
         from sqlite3 import dbapi2 as sqlite
@@ -71,6 +83,18 @@ def openKodiMuDB():                                  #  Open Kodi music database
         from pysqlite2 import dbapi2 as sqlite
                       
     DB = os.path.join(xbmcvfs.translatePath("special://database"), getmuDatabaseName())
+    db = sqlite.connect(DB)
+
+    return(db)  
+
+
+def openKodiTeDB():                                  #  Open Kodi textures database
+    try:
+        from sqlite3 import dbapi2 as sqlite
+    except:
+        from pysqlite2 import dbapi2 as sqlite
+                      
+    DB = os.path.join(xbmcvfs.translatePath("special://database"), getteDatabaseName())
     db = sqlite.connect(DB)
 
     return(db)  

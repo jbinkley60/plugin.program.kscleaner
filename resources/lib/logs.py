@@ -7,6 +7,7 @@ import xbmcvfs
 import csv 
 from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
 from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature
+from resources.lib.exports import exportData
 from datetime import datetime
 
 addon = xbmcaddon.Addon()
@@ -35,7 +36,7 @@ def displayGenLogs():
             cursync = dsfile.execute('SELECT * FROM kscleanLog ORDER BY kgDate DESC, kgTime DESC LIMIT 2000',)
             headval = translate(30313)
         elif menuitem1 in msdates[mdate] :                       # CSV export of logs
-            logExport()
+            exportData(['kscleanLog'],'logs')
             return
         elif len(msdates[mdate]) > 2:                            # Get records for selected date
             cursync = dsfile.execute('SELECT * FROM kscleanLog WHERE kgDate=? ORDER BY kgTime DESC', \
@@ -69,61 +70,5 @@ def displayGenLogs():
         perfdialog.ok(translate(30308), dialog_text)     
     dsfile.close()
     return
-
-
-def logExport():
-
-    try:
-
-        folderpath = xbmcvfs.translatePath(os.path.join("special://home/", "output/"))
-        if not xbmcvfs.exists(folderpath):
-            xbmcvfs.mkdir(folderpath)
-            xbmc.log("KS Cleaner Export Output folder not found: " +  str(folderpath), xbmc.LOGINFO)
-
-        fpart = datetime.now().strftime('%H%M%S')
-        dbexport = openKscleanDB()
-        outfile = folderpath + "kscleaner_" + 'addon_logs_' + fpart + ".csv"
-        curm = dbexport.execute('SELECT * FROM kscleanLog')
-        recs = curm.fetchall()
-        headers = [i[0] for i in curm.description]
-        csvFile = csv.writer(open(outfile, 'w', encoding='utf-8'),
-                         delimiter=',', lineterminator='\n',
-                         quoting=csv.QUOTE_ALL, escapechar='\\')
-
-        csvFile.writerow(headers)                       # Add the headers and data to the CSV file.
-        for row in recs:
-            recsencode = []
-            # xbmc.log("Mezzmo output string length is: " +  str(len(row)), xbmc.LOGINFO)
-            for item in range(len(row)):
-                if isinstance(row[item], int) or isinstance(row[item], float):  # Convert to strings
-                    rectemp = str(row[item])
-                    try:
-                        recitem = rectemp.decode('utf-8')
-                    except:
-                        recitem = rectemp
-                else:
-                    rectemp = row[item]
-                    try:
-                        recitem = rectemp.decode('utf-8')
-                    except:
-                        recitem = rectemp
-                recsencode.append(recitem) 
-            csvFile.writerow(recsencode)                
-        dbexport.close()
-
-        outmsg = folderpath
-        dialog_text = translate(30318) + outmsg 
-        xbmcgui.Dialog().ok(translate(30319), dialog_text)
-
-    except Exception as e:
-        printexception()
-        dbexport.close()
-        kgenlog = translate(30320)
-        xbmcgui.Dialog().notification(translate(30308), kgenlog, addon_icon, 5000)            
-        #xbmc.log(kgenlog, xbmc.LOGINFO)
-        kgenlogUpdate(kgenlog)
-
-
-
 
 
