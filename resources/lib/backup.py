@@ -123,7 +123,8 @@ def checkBackups(fpath, fname):                              #  Check for proper
 
     try:
         backcount = settings('backcount')
-
+        if int(backcount) == 0:                              #  Keep infinite copies
+            return
         paths = sorted(Path(fpath).iterdir(), key=os.path.getmtime, reverse=True)
         count = 0
         for p in range(0, len(paths)):

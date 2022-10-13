@@ -170,5 +170,5 @@ msgstr ""
 
 
 msgctxt "#30600"
-msgid "Select the number of database backups to keep.  The range is 0-20.  10 is the default. "
+msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
 msgstr ""
