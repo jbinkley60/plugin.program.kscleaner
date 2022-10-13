@@ -30,9 +30,7 @@ def get_installedversion():
 
 def getDatabaseName():
     installed_version = get_installedversion()
-    if installed_version == '18':
-        return "MyVideos116.db"
-    elif installed_version == '19':
+    if installed_version == '19':
         return "MyVideos119.db"
     elif installed_version == '20':
         return "MyVideos121.db"
@@ -42,9 +40,7 @@ def getDatabaseName():
 
 def getmuDatabaseName():
     installed_version = get_installedversion()
-    if installed_version == '18':
-        return "MyMusic72.db"
-    elif installed_version == '19':
+    if installed_version == '19':
         return "MyMusic82.db"
     elif installed_version == '20':
         return "MyMusic82.db"
@@ -54,9 +50,7 @@ def getmuDatabaseName():
 
 def getteDatabaseName():
     installed_version = get_installedversion()
-    if installed_version == '18':
-        return "Textures13.db"
-    elif installed_version == '19':
+    if installed_version == '19':
         return "Textures13.db"
     elif installed_version == '20':
         return "Textures13.db"
@@ -109,7 +103,29 @@ def openKscleanDB():                                 #  Open Kscleaner database
     DBconn = os.path.join(xbmcvfs.translatePath("special://database"), "Ksclean10.db")  
     dbsync = sqlite.connect(DBconn)
 
-    return(dbsync) 
+    return(dbsync)
+
+
+def openKodiOutDB(dbtype):                                #  Open Kodi output database
+    try:
+        from sqlite3 import dbapi2 as sqlite
+    except:
+        from pysqlite2 import dbapi2 as sqlite
+
+    fpart = 'kscleaner/' + datetime.now().strftime('%H%M%S') + '_'  
+
+    if dbtype == 'video':                  
+        ppart = fpart + getDatabaseName()
+    elif dbtype == 'music':
+        ppart = fpart + getmuDatabaseName()
+    elif dbtype == 'texture':
+        ppart = fpart + getteDatabaseName()
+
+    DB = os.path.join(xbmcvfs.translatePath("special://database"), ppart)
+    dbpath = os.path.join(xbmcvfs.translatePath("special://database"), 'kscleaner')
+    db = sqlite.connect(DB)
+
+    return[db, ppart, dbpath]   
  
 
 def checkKscleanDB():                                   #  Verify Kscleaner database

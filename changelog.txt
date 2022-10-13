@@ -7,4 +7,6 @@
 - Some bug fixes 
 - Added full CSV export capability
 - Added support for textures database
+0.0.4
+- Added selective database backups and backup limit setting 
 

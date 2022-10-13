@@ -12,6 +12,7 @@ from resources.lib.movies import displayMovieMenu
 from resources.lib.mvideos import displayMvideos
 from resources.lib.music import displayMmusic
 from resources.lib.exports import selectExport
+from resources.lib.backup import selectBackups
 
 from datetime import datetime
 
@@ -35,13 +36,11 @@ def displayMenu():                                              # Display menu
             kmfile = openKodiMuDB()                              # Open Kodi music database
             kcfile = openKscleanDB()                             # Open Kscleaner database
             pselect = []
-            #curpf = kvfile.execute('SELECT c00 FROM movie LIMIT 1', )
             curpf = kvfile.execute('SELECT count (c00) FROM movie',)
             kmovies = curpf.fetchone()[0]                        # Get movies from video database
             if int(kmovies) > -1 :                               # If movies in video database
                 pselect.append(str(menuitem1)  + '\t\t  -  ' + str(kmovies) + '  ' + translate(30327))
 
-            #curpf = kvfile.execute('SELECT c00 FROM tvshow LIMIT 1', )
             curpf = kvfile.execute('SELECT count (c00) FROM tvshow',)
             ktvshows = curpf.fetchone()[0]                       # Get tvshows from video database
             if int(ktvshows) > -1 :                              # If tvshows in video database
@@ -104,8 +103,8 @@ def displayMenu():                                              # Display menu
         elif menuitem6 in (pselect[vdate]):                      # CSV Export selected 
             selectExport()
         elif menuitem7 in (pselect[vdate]):                      # Backup selected
-            nofeature() 
-            #perfStats()
+            #nofeature() 
+            selectBackups()
 
 checkKscleanDB()                                                #  Check Kscleaner logging database
 displayMenu()                                                   #  Display main menu

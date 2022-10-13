@@ -128,7 +128,47 @@ msgctxt "#30327"
 msgid "Items"
 msgstr ""
 
+msgctxt "#30328"
+msgid "Kodi Video Database"
+msgstr ""
+
+msgctxt "#30329"
+msgid "Kodi Music Database"
+msgstr ""
+
+msgctxt "#30330"
+msgid "Kodi Textures Database"
+msgstr ""
+
+msgctxt "#30331"
+msgid "Backup Selected Database(s)"
+msgstr ""
+
+msgctxt "#30332"
+msgid "Database Backup"
+msgstr ""
+
+msgctxt "#30333"
+msgid "Backup(s) Beginning"
+msgstr ""
+
+msgctxt "#30334"
+msgid "KS Cleaner Database Backup Error"
+msgstr ""
+
+msgctxt "#30335"
+msgid "KS Cleaner database backup(s) successful at: \n"
+msgstr ""
+
+msgctxt "#30336"
+msgid "Number of Database Backups"
+msgstr ""
+
+msgctxt "#30337"
+msgid "General"
+msgstr ""
 
 
-
-
+msgctxt "#30600"
+msgid "Select the number of database backups to keep.  The range is 0-20.  10 is the default. "
+msgstr ""
