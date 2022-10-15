@@ -13,6 +13,7 @@ from resources.lib.mvideos import displayMvideos
 from resources.lib.music import displayMmusic
 from resources.lib.exports import selectExport
 from resources.lib.backup import selectBackups
+from resources.lib.vanalyze import vanalMenu
 
 from datetime import datetime
 
@@ -28,7 +29,9 @@ def displayMenu():                                              # Display menu
     menuitem4 = translate(30303) 
     menuitem5 = translate(30304)
     menuitem6 = translate(30317)
-    menuitem7 = translate(30305)    
+    menuitem7 = translate(30305)
+    menuitem8 = translate(30338)
+    menuitem9 = translate(30339)    
 
     while True:
         try:
@@ -56,13 +59,14 @@ def displayMenu():                                              # Display menu
             if int(kmusic) > -1 :                                # If albums in music database
                 pselect.append(str(menuitem4)  + '\t\t  -  ' + str(kmusic) + '  ' + translate(30327))
 
+            pselect.extend([menuitem8, menuitem9])               # Add analyzer menu options
+
             curpf = kcfile.execute('SELECT count (kgGenDat) FROM kscleanLog', )
             kslog = curpf.fetchone()[0]                          # Get logs from logging database
             if int(kslog) > -1:                                  # If logs in logging database
                 pselect.append(menuitem5)     
 
-            pselect.append(menuitem6)
-            pselect.append(menuitem7)
+            pselect.extend([menuitem6, menuitem7])
 
             ddialog = xbmcgui.Dialog()    
             vdate = ddialog.select(translate(30306), pselect)
@@ -94,6 +98,8 @@ def displayMenu():                                              # Display menu
         elif menuitem3 in (pselect[vdate]):                      # Music video selected
             if kmvideos > 0:
                 displayMvideos()
+        elif menuitem9 in (pselect[vdate]):                      # Music analyze
+            nofeature() 
         elif menuitem4 in (pselect[vdate]):                      # Music selected
             if kmusic > 0:
                 displayMmusic()
@@ -102,9 +108,11 @@ def displayMenu():                                              # Display menu
                 displayGenLogs()        
         elif menuitem6 in (pselect[vdate]):                      # CSV Export selected 
             selectExport()
-        elif menuitem7 in (pselect[vdate]):                      # Backup selected
-            #nofeature() 
+        elif menuitem7 in (pselect[vdate]):                      # Backup selected 
             selectBackups()
+        elif menuitem8 in (pselect[vdate]):                      # Video analyze
+            vanalMenu()
+
 
 checkKscleanDB()                                                #  Check Kscleaner logging database
 displayMenu()                                                   #  Display main menu

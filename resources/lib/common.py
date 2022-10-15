@@ -135,10 +135,18 @@ def checkKscleanDB():                                   #  Verify Kscleaner data
 
         dbsync.execute('CREATE table IF NOT EXISTS kscleanLog (kgDate TEXT, kgTime TEXT,   \
         kgGenDat TEXT, extVar1 TEXT, extVar2 TEXT )')
-        dbsync.execute('CREATE INDEX IF NOT EXISTS kgen_1 ON kscleanLog (kgDate)')  
+        dbsync.execute('CREATE INDEX IF NOT EXISTS kgen_1 ON kscleanLog (kgDate)') 
+
+        dblimit1 = 10000
+        dbsync.execute('delete from kscleanLog where kgDate not in (select kgDate from  \
+        kscleanLog order by kgDate desc limit ?)', (dblimit1,))
 
         dbsync.commit()
+        dbsync.execute('REINDEX',)
+        dbsync.execute('VACUUM',)
+        dbsync.commit()
         dbsync.close()
+
         kgenlog ='KS Cleaner logging database check successful.  Addon started.'
         kgenlogUpdate(kgenlog)
 
@@ -163,6 +171,37 @@ def kgenlogUpdate(kgenlog):                              #  Add logs to DB
         mgfile.close()
     except Exception as e:
         xbmc.log('KS cleaner problem writing to general log DB: ' + str(e), xbmc.LOGERROR)
+
+
+def tempDisplay(vtable):
+
+    try:
+        
+        tempdb = openKscleanDB()
+        curr = tempdb.execute('SELECT comments FROM vdb_temp')
+        mglogs = curr.fetchall()                                     # Get logs from database
+        msdialog = xbmcgui.Dialog()
+        headval = "{:^128}".format(translate(30306))
+        textval1 = "{:^128}".format(translate(30357) + ' - ' + vtable )  
+        textval1 = textval1 + "\n" 
+
+        if mglogs:
+            for a in range(len(mglogs)):                              # Display logs if exist   
+                mcomment = mglogs[a][0]
+                textval1 = textval1 + "\n" + mcomment
+            msdialog.textviewer(headval, textval1)                                     
+        else:                                                         # No records found for date selected   
+            perfdialog = xbmcgui.Dialog()
+            dialog_text = translate(30312)        
+            perfdialog.ok(translate(30308), dialog_text)     
+        tempdb.close()
+        return
+
+    except Exception as e:
+        xbmc.log('KS Cleaner logging database check error.', xbmc.LOGERROR)
+        printexception()
+
+
 
 
 def nofeature(note = ' '):

@@ -8,6 +8,7 @@ and Music databases
 <b>Features:</b>
 - Kodi 19 and 20 compatible.
 - Individually select data  in the Kodi video and music databases
+- Database analyzer to find and delete orphaned data
 - Ability to multi-select records to delete.
 - Logging database to track all activities with Log Viewer
 - CSV export for Video, Music and Textures databases 
