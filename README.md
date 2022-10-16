@@ -3,6 +3,7 @@ A program addon to allow selective deletion of data in the Kodi Video
 and Music databases
 
 <a href="https://forum.kodi.tv/showthread.php?tid=369984">Kodi Support Forum</a>
+<a href="https://github.com/jbinkley60/Kodi-Selective-Cleaner/wiki">Wiki page</a>
 
 
 <b>Features:</b>
