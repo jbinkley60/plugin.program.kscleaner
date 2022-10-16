@@ -3,7 +3,7 @@ import xbmcgui
 import xbmcplugin
 import xbmcaddon
 import xbmcvfs
-import os, sys, linecache
+import os, sys, linecache, os.path
 import json
 from datetime import datetime
 

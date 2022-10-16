@@ -10,5 +10,10 @@
 0.0.4
 - Added selective database backups and backup limit setting
 0.0.5
-- Added database analyzer  
+- Added database analyzer 
+0.0.6
+- Fixed data analyzer output formatting 
+- Added detection for missing databases
+- Added art table to the video database analyzer
+ 
 

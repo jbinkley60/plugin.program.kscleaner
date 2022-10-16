@@ -245,7 +245,7 @@ msgid "Select Analyzer Function"
 msgstr ""
 
 msgctxt "#30357"
-msgid "Orphaned Data Analysis"
+msgid "Unmatched Data Analysis"
 msgstr ""
 
 msgctxt "#30358"

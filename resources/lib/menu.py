@@ -74,7 +74,7 @@ def displayMenu():                                              # Display menu
             del curpf    
             kvfile.close()
             kcfile.close()
-            kmfile.close()
+            kmfile.close()     
         except Exception as e:
             xbmc.log('KS Cleaner main menu error. ', xbmc.LOGERROR)
             del curpf             
