@@ -15,5 +15,9 @@
 - Fixed data analyzer output formatting 
 - Added detection for missing databases
 - Added art table to the video database analyzer
+0.0.7
+- Continued improvements with data analyzer output formatting
+- All tables now available in video database analyzer
+- Improved checking for NULL fields 
  
 
