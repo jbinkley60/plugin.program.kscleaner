@@ -21,7 +21,7 @@
 - Improved checking for NULL fields
 0.0.8
 - Added column header information to video data analyzer output
-- Modified databae backup file names to include both date and time
+- Modified database backup file names to include both date and time
 - Added 3 more tables to the video DB analyzer genre_id, seasons and tag_link
 - CSV export now working for all video DB analyzer tables
 - Added clean indicator to both video DB analyzer display and CSV outputs
