@@ -14,7 +14,7 @@ addon_path = addon.getAddonInfo("path")
 addon_icon = addon_path + '/resources/icon.png'
 
 
-def exportData(selectbl, dbtype = None):                           # CSV Output selected table
+def exportData(selectbl, dbtype = None, tablenm = None):         # CSV Output selected table
 
     try:
 
@@ -27,26 +27,32 @@ def exportData(selectbl, dbtype = None):                           # CSV Output 
 
         for a in range(len(selectbl)):
             fpart = datetime.now().strftime('%H%M%S')
-            if dbtype != 'logs':                                 # Logs CSV export
+            if len(dbtype) == 0 :                                # Logs CSV export
                 selectindex = int(selectbl[a][:2])               # Get list index to determine DB
                 selectname = selectbl[a][2:]                     # Parse table name in DB
 
                 #xbmc.log("Mezzmo selectable is: " +  str(selectindex) + ' ' + selectname, xbmc.LOGINFO)
-                if selectindex < 21:
+                if selectindex < 21:                             # Export Kodi video DB tables
                     dbexport = openKodiDB()
                     dbase = 'videos_'
-                elif selectindex < 41:
+                elif selectindex < 41:                           # Export Kodi music DB tables
                     dbexport = openKodiMuDB()
                     dbase = 'music_'
                 else:
-                    dbexport = openKodiTeDB()
+                    dbexport = openKodiTeDB()                    # Export Kodi video textures tables
                     dbase = 'textures_'                
-            else:
+            elif dbtype == 'analyzer':                           # Export video / music analyzer output
+                selectname = selectbl[0]                
+                dbexport = openKscleanDB()
+            elif dbtype == 'logs':                               # Export KS Cleaner logs
                 selectname = selectbl[0]
                 dbexport = openKscleanDB()
                 dbase = 'addon_'
 
-            outfile = folderpath + "kscleaner_" + dbase + selectname + "_" + fpart + ".csv"
+            if dbtype == 'analyzer':
+                outfile = folderpath + "kscleaner_video_analyzer_" + tablenm + "_" + fpart + ".csv"                
+            else:
+                outfile = folderpath + "kscleaner_" + dbase + selectname + "_" + fpart + ".csv"
             curm = dbexport.execute('SELECT * FROM '+selectname+'')
             recs = curm.fetchall()
             headers = [i[0] for i in curm.description]
@@ -67,9 +73,12 @@ def exportData(selectbl, dbtype = None):                           # CSV Output 
                     else:
                         rectemp = row[item]
                         try:
-                            recitem = rectemp.decode('utf-8')
+                            recitem = rectemp.decode('utf-8').replace('[COLOR blue]', '').replace('[/COLOR]', '')
                         except:
-                            recitem = rectemp
+                            if rectemp != None:
+                               recitem = rectemp.replace('[COLOR blue]', '').replace('[/COLOR]', '')
+                            else:
+                               recitem = rectemp
                     recsencode.append(recitem) 
                 csvFile.writerow(recsencode)                
             dbexport.close()

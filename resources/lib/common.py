@@ -112,7 +112,7 @@ def openKodiOutDB(dbtype):                                #  Open Kodi output da
     except:
         from pysqlite2 import dbapi2 as sqlite
 
-    fpart = 'kscleaner/' + datetime.now().strftime('%H%M%S') + '_'  
+    fpart = 'kscleaner/' + datetime.now().strftime('%m%d%Y-%H%M%S') + '_'  
 
     if dbtype == 'video':                  
         ppart = fpart + getDatabaseName()
@@ -155,11 +155,11 @@ def checkKscleanDB():                                   #  Verify Kscleaner data
         printexception()
 
 
-def kgenlogUpdate(kgenlog):                              #  Add logs to DB
+def kgenlogUpdate(kgenlog, kdlog = 'Yes'):               #  Add logs to DB
 
     try:
-
-        xbmc.log(kgenlog, xbmc.LOGINFO)
+        if kdlog == 'Yes':                               #  Write to Kodi logfile
+            xbmc.log(kgenlog, xbmc.LOGINFO)
         mgfile = openKscleanDB()                         #  Open Kscleaner log database
 
         currmsDate = datetime.now().strftime('%Y-%m-%d')
@@ -173,17 +173,19 @@ def kgenlogUpdate(kgenlog):                              #  Add logs to DB
         xbmc.log('KS cleaner problem writing to general log DB: ' + str(e), xbmc.LOGERROR)
 
 
-def tempDisplay(vtable):
+def tempDisplay(vtable, vheader = ''):
 
-    try:
-        
+    try:        
         tempdb = openKscleanDB()
         curr = tempdb.execute('SELECT comments FROM vdb_temp')
         mglogs = curr.fetchall()                                     # Get logs from database
         msdialog = xbmcgui.Dialog()
         headval = "{:^128}".format(translate(30306))
-        textval1 = "{:^128}".format(translate(30357) + ' - ' + vtable )  
-        textval1 = textval1 + "\n" 
+        if len(vheader) == 0:        
+            textval1 = "{:^128}".format(translate(30357) + ' - ' + vtable )
+        else:
+            textval1 = "{:^128}".format(translate(30357) + ' - ' + vtable )  + '\n\n' + vheader 
+        textval1 = textval1 + '\n' 
 
         if mglogs:
             for a in range(len(mglogs)):                              # Display logs if exist   

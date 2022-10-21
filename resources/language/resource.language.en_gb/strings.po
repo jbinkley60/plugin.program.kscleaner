@@ -252,6 +252,17 @@ msgctxt "#30358"
 msgid "No unmatched records found for: "
 msgstr ""
 
+msgctxt "#30359"
+msgid "genre_link"
+msgstr ""
+
+msgctxt "#30360"
+msgid "seasons"
+msgstr ""
+
+msgctxt "#30361"
+msgid "tag_link"
+msgstr ""
 
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."

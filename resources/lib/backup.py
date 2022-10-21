@@ -42,7 +42,7 @@ def backupDB(selectdbs):                                          # Database bac
             dbin.close()
             dbscompleted += 1
             checkBackups(dbout[2], 'MyVideos')                   # Limit number of backups
-            kgenlog ='Kodi Video Database backup successful: ' + dbout[1].split('/')[1]
+            kgenlog ='Kodi Video DB backup successful: ' + dbout[1].split('/')[1]
             kgenlogUpdate(kgenlog)
             kscprogress.update(int(float(dbscompleted / dbslength) * 100), translate(30328))
             xbmc.sleep(2000) 
@@ -56,7 +56,7 @@ def backupDB(selectdbs):                                          # Database bac
             dbin.close()
             dbscompleted += 1
             checkBackups(dbout[2], 'MyMusic')                    # Limit number of backups
-            kgenlog ='Kodi Music Database backup successful: ' + dbout[1].split('/')[1]
+            kgenlog ='Kodi Music DB backup successful: ' + dbout[1].split('/')[1]
             kgenlogUpdate(kgenlog)
             kscprogress.update(int(float(dbscompleted / dbslength) * 100), translate(30329))
             xbmc.sleep(2000) 
@@ -70,7 +70,7 @@ def backupDB(selectdbs):                                          # Database bac
             dbin.close()
             dbscompleted += 1
             checkBackups(dbout[2], 'Textures')                   # Limit number of backups
-            kgenlog ='Kodi Textures Database backup successful: ' + dbout[1].split('/')[1] 
+            kgenlog ='Kodi Textures DB backup successful: ' + dbout[1].split('/')[1] 
             kgenlogUpdate(kgenlog)
             kscprogress.update(int(float(dbscompleted / dbslength) * 100), translate(30330))
             xbmc.sleep(2000) 
