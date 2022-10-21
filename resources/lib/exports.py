@@ -27,7 +27,7 @@ def exportData(selectbl, dbtype = None, tablenm = None):         # CSV Output se
 
         for a in range(len(selectbl)):
             fpart = datetime.now().strftime('%H%M%S')
-            if len(dbtype) == 0 :                                # Logs CSV export
+            if dbtype == None :                                  # Logs CSV export
                 selectindex = int(selectbl[a][:2])               # Get list index to determine DB
                 selectname = selectbl[a][2:]                     # Parse table name in DB
 
