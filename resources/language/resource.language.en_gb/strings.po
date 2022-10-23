@@ -264,6 +264,18 @@ msgctxt "#30361"
 msgid "tag_link"
 msgstr ""
 
+msgctxt "#30362"
+msgid "Confirm cleaning of Kodi Video DB table.  This can only be undone by restoring your Video DB from a backup."
+msgstr ""
+
+msgctxt "#30363"
+msgid "Kodi Video DB table successfully cleaned: "
+msgstr ""
+
+msgctxt "#30364"
+msgid " records"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
 msgstr ""

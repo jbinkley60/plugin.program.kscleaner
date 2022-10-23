@@ -85,7 +85,21 @@ def vanalfMenu(vtable):                                   # Select analyzer func
             else:
                 nofeature() 
         elif menuitem3 in selectfn[sfunction]:
-            nofeature() 
+            alrecs = vdbAnalysis(vtable)
+            kgenlog = ('Video DB Analysis Clean - ' +  vtable + ' - ' + str(alrecs) + ' unmatched found')
+            kgenlogUpdate(kgenlog, 'No')
+            if alrecs != None and alrecs > 0:
+                if checkClean(vtable):
+                    ccount = vdbClean(vtable)
+                    finishClean(vtable, ccount) 
+                else:
+                    kgenlog = ('Video DB Analysis Clean - ' +  vtable + ' - user cancelled')
+                    kgenlogUpdate(kgenlog, 'No')
+                    return 
+            elif alrecs != None and alrecs == 0:
+                displayClean(vtable)
+            else:
+                nofeature() 
 
     except Exception as e:
         printexception()    
@@ -263,8 +277,9 @@ def vdbAnalysis(vtable):                                 # Analyze table
                     acomment = '[COLOR blue]' +  "{:<47}".format('art table sets unmatched') +              \
                     '[/COLOR]' + "{:10d}".format(int(alist[a][0])) + "{:10d}".format(int(alist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(alist[a][2]))
-                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, clean,     \
-                    comments) values (?, ?, ?, ?, ?)', (alist[a][0], alist[a][1], alist[a][2], 'Yes', acomment))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
+                     clean, comments) values (?, ?, ?, ?, ?, ?)', (alist[a][0], alist[a][1], alist[a][2],   \
+                     alist[a][3],'Yes', acomment))
                 outdb.commit()
                       
             if len(mlist) > 0:                            # Add movie unmatcheds
@@ -272,8 +287,9 @@ def vdbAnalysis(vtable):                                 # Analyze table
                     acomment = '[COLOR blue]' +  "{:<45}".format('art table movie unmatched') +             \
                     '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:10d}".format(int(mlist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(mlist[a][2]))
-                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, clean,     \
-                    comments) values (?, ?, ?, ?, ?)', (mlist[a][0], mlist[a][1], mlist[a][2], 'Yes', acomment))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
+                    clean, comments) values (?, ?, ?, ?, ?, ?)', (mlist[a][0], mlist[a][1], mlist[a][2],    \
+                    mlist[a][3],'Yes', acomment))
                 outdb.commit()
 
             if len(elist) > 0:                            # Add episode unmatcheds
@@ -281,8 +297,9 @@ def vdbAnalysis(vtable):                                 # Analyze table
                     acomment = '[COLOR blue]' +  "{:<44}".format('art table episode unmatched') +           \
                     '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:10d}".format(int(elist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(elist[a][2]))
-                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, clean,     \
-                    comments) values (?, ?, ?, ?, ?)', (elist[a][0], elist[a][1], elist[a][2], 'Yes', acomment))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
+                    clean, comments) values (?, ?, ?, ?, ?, ?)', (elist[a][0], elist[a][1], elist[a][2],    \
+                    elist[a][3], 'Yes', acomment))
                 outdb.commit()
 
             if len(tlist) > 0:                            # Add tvshow unmatcheds
@@ -290,8 +307,9 @@ def vdbAnalysis(vtable):                                 # Analyze table
                     acomment = '[COLOR blue]' +  "{:<44}".format('art table tvshow unmatched') +            \
                     '[/COLOR]' + "{:10d}".format(int(tlist[a][0])) + "{:10d}".format(int(tlist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(tlist[a][2]))
-                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, clean,     \
-                    comments) values (?, ?, ?, ?, ?)', (tlist[a][0], tlist[a][1], tlist[a][2], 'Yes', acomment))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
+                    clean, comments) values (?, ?, ?, ?, ?, ?)', (tlist[a][0], tlist[a][1], tlist[a][2],    \
+                    tlist[a][3], 'Yes', acomment))
                 outdb.commit()  
 
             if len(vlist) > 0:                            # Add musicvideo unmatcheds
@@ -299,8 +317,9 @@ def vdbAnalysis(vtable):                                 # Analyze table
                     acomment = '[COLOR blue]' +  "{:<41}".format('art table musicvideo unmatched') +        \
                     '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:10d}".format(int(vlist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(vlist[a][2]))
-                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, clean,     \
-                    comments) values (?, ?, ?, ?, ?)', (vlist[a][0], vlist[a][1], vlist[a][2], 'Yes', acomment))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
+                    clean, comments) values (?, ?, ?, ?, ?, ?)', (vlist[a][0], vlist[a][1], vlist[a][2],    \
+                    vlist[a][3], 'Yes', acomment))
                 outdb.commit() 
 
             if len(slist) > 0:                            # Add season unmatcheds
@@ -308,8 +327,9 @@ def vdbAnalysis(vtable):                                 # Analyze table
                     acomment = '[COLOR blue]' +  "{:<44}".format('art table season unmatched') +            \
                     '[/COLOR]' + "{:10d}".format(int(slist[a][0])) + "{:10d}".format(int(slist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(slist[a][2]))
-                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, clean,     \
-                    comments) values (?, ?, ?, ?, ?)', (slist[a][0], slist[a][1], slist[a][2], 'Yes', acomment))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
+                    clean, comments) values (?, ?, ?, ?, ?, ?)', (slist[a][0], slist[a][1], slist[a][2],    \
+                    slist[a][3], 'Yes', acomment))
                 outdb.commit()                            
             outdb.close()
             return orprecs
@@ -1033,6 +1053,20 @@ def displayClean(vtable):                                 # Clean unmatched anal
     xbmcgui.Dialog().ok(translate(30306), dialog_text)
 
 
+def checkClean(vtable):                                   # Check to ensure cleaning
+
+    dialog_text = translate(30362)
+    dialog_head = translate(30306) + ' - ' + vtable
+    select = xbmcgui.Dialog().yesno(dialog_head, dialog_text)
+    return select
+
+
+def finishClean(vtable, recs):                            # Clean unmatched results
+
+    dialog_text = translate(30363) + '\n' + vtable + ' - ' + str(recs) + translate(30364)
+    xbmcgui.Dialog().ok(translate(30306), dialog_text)
+
+
 def getHeader(vtable):
 
     try:
@@ -1087,6 +1121,228 @@ def getHeader(vtable):
 
     except Exception as e:
         printexception()   
+
+
+def vdbClean(vtable):                                         # Clean video database
+
+    try:
+        kodidb = openKodiDB()
+        cleandb = openKscleanDB()
+        recscount = 0
+
+        curt = cleandb.execute('SELECT count (*) FROM vdb_temp WHERE clean = "Yes" ')
+        curc = cleandb.execute('SELECT * FROM vdb_temp WHERE clean = "Yes" ')
+        recscount = curt.fetchone()[0]
+        cleanrecs = curc.fetchall()
+        cleandb.close()
+    
+        xbmc.log('KS Cleaner records to clean: ' + str(recscount), xbmc.LOGDEBUG)
+
+        if vtable == 'actor':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from actor WHERE actor_id = ? ', (var1,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'actor_id ' + str(var1) + \
+                ' name ' + str(var2))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount    
+
+        elif vtable == 'actor_link':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from actor_link WHERE actor_id = ? and media_id = ? and   \
+                media_type = ? ', (var1, var2, var3,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'actor_id ' + str(var1) + \
+                ' media_id ' + str(var2) + ' media_type ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount        
+
+        elif vtable == 'art':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]
+                var4 =  cleanrecs[clean][3]     
+                kodidb.execute('DELETE from art WHERE art_id = ? and media_id = ? and   \
+                media_type = ? and type = ?', (var1, var2, var3, var4,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'art_id ' + str(var1) + \
+                ' media_id ' + str(var2) + ' media_type ' + str(var3) + ' type ' + str(var4))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount        
+
+        elif vtable == 'director_link':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from director_link WHERE actor_id = ? and media_id = ? and   \
+                media_type = ? ', (var1, var2, var3,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'actor_id ' + str(var1) + \
+                ' media_id ' + str(var2) + ' media_type ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount
+
+        elif vtable == 'episode':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from episode WHERE idEpisode = ? ', (var1,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idEpisode ' + str(var1) + \
+                ' idFile ' + str(var2) + ' name ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No')               
+            kodidb.commit()
+            kodidb.close()
+            return recscount    
+
+        elif vtable == 'files':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from files WHERE idFile = ? ', (var1,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idFile ' + str(var1) + \
+                ' idPath ' + str(var2) + ' dateadded ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No')               
+            kodidb.commit()
+            kodidb.close()
+            return recscount   
+
+        elif vtable == 'genre_link':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from genre_link WHERE genre_id = ? and media_id = ? and   \
+                media_type = ? ', (var1, var2, var3,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'genre_id ' + str(var1) + \
+                ' media_id ' + str(var2) + ' media_type ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount
+
+        elif vtable == 'movie':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from movie WHERE idMovie = ? ', (var1,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idMovie ' + str(var1) + \
+                ' idFile ' + str(var2) + ' name ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No')               
+            kodidb.commit()
+            kodidb.close()
+            return recscount    
+
+        elif vtable == 'musicvideo':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from musicvideo WHERE idMVideo = ? ', (var1,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idMVideo ' + str(var1) + \
+                ' idFile ' + str(var2) + ' name ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No')               
+            kodidb.commit()
+            kodidb.close()
+            return recscount    
+
+        elif vtable == 'seasons':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from seasons WHERE idSeason = ? and idShow = ? ',       \
+                (var1, var2,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idSeason ' + str(var1) + \
+                ' idShow ' + str(var2) + ' name ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount
+
+        elif vtable == 'sets':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]  
+                kodidb.execute('DELETE from sets WHERE idSet = ? ', (var1,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idSet ' + str(var1) + \
+                ' strSet ' + str(var2))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount
+
+        elif vtable == 'streamdetails':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1] 
+                kodidb.execute('DELETE from streamdetails WHERE idFile = ? and iStreamType = ? ', \
+                (var1, var2,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idFile ' + str(var1) + \
+                ' iStreamType ' + str(var2))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount
+
+        elif vtable == 'tag_link':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from tag_link WHERE tag_id = ? and media_id = ? and   \
+                media_type = ? ', (var1, var2, var3,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'tag_id ' + str(var1) + \
+                ' media_id ' + str(var2) + ' media_type ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount        
+
+        elif vtable == 'tvshow':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1] 
+                kodidb.execute('DELETE from tvshow WHERE idShow = ? ', (var1,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idShow ' + str(var1) + \
+                ' name ' + str(var2))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount
+
+        elif vtable == 'writer_link':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]   
+                kodidb.execute('DELETE from writer_link WHERE actor_id = ? and media_id = ? and   \
+                media_type = ? ', (var1, var2, var3,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'actor_id ' + str(var1) + \
+                ' media_id ' + str(var2) + ' media_type ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No')                
+            kodidb.commit()
+            kodidb.close()
+            return recscount
+
+    except Exception as e:
+        printexception() 
+        kodidb.close()
+
 
 
 

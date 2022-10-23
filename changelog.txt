@@ -25,6 +25,9 @@
 - Added 3 more tables to the video DB analyzer genre_id, seasons and tag_link
 - CSV export now working for all video DB analyzer tables
 - Added clean indicator to both video DB analyzer display and CSV outputs
+0.0.9
+- Added Kodi video DB analyzer clean function to clean orphaned data 
+
  
  
 
