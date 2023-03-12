@@ -13,33 +13,26 @@ addon = xbmcaddon.Addon()
 addon_path = addon.getAddonInfo("path")
 addon_icon = addon_path + '/resources/icon.png'
 
-def displayMovieMenu(dbtype):                                       # Display menu 
+def displayMovieMenu():                                             # Display menu 
 
     while True:
         try:
-            kvfile = openKodiDB(dbtype)                             # Open Kodi video database
+            kvfile = openKodiDB()                                   # Open Kodi video database
             pselect = []
-            mquery = "SELECT upper(substr(c00, 1, 1)) FROM movie GROUP BY upper(substr(c00, 1, 1))"
-            if dbtype == 'mysql':
-                kcursor = kvfile.cursor()
-                kcursor.execute(mquery)
-                kmmovies = kcursor.fetchall()                       # Get movies from video database
-                kcursor.close()
-            else:
-                curpf = kvfile.execute(mquery)
-                kmmovies = curpf.fetchall()                         # Get movies from video database
-                del curpf 
+            curpf = kvfile.execute('SELECT upper(substr(c00, 1, 1)) FROM movie GROUP BY upper(substr(c00, 1, 1))')
+            kmmovies = curpf.fetchall()                             # Get movies from video database
             for mmovie in kmmovies:
                 pselect.append(mmovie[0])                          
  
             ddialog = xbmcgui.Dialog()    
             vdate = ddialog.select(translate(30306) + ' - ' + translate(30317), pselect)
-            xbmc.log('Kodi selective cleaner movie menu selection is: ' + pselect[vdate], xbmc.LOGDEBUG)  
+            xbmc.log('Kodi selective cleaner movie menu selection is: ' + pselect[vdate], xbmc.LOGDEBUG)
+            del curpf    
             kvfile.close()
         except Exception as e:
             xbmc.log('KS Cleaner Movies menu error. ', xbmc.LOGERROR)
-            if kvfile:            
-                kvfile.close()
+            del curpf             
+            kvfile.close()
             printexception()
             perfdialog = xbmcgui.Dialog()
             dialog_text = translate(30309) + ' ' + translate(30310)
@@ -51,29 +44,18 @@ def displayMovieMenu(dbtype):                                       # Display me
         else:                                                      # TV Show selected
             xbmc.log('KC Cleaner Movies Menu selection: ' + str(kmmovies[vdate][0]), xbmc.LOGDEBUG )
             #nofeature()
-            displayMovies(kmmovies[vdate][0], dbtype)
+            displayMovies(kmmovies[vdate][0])
 
 
-def displayMovies(ssname, dbtype):                                  # Display menu 
+def displayMovies(ssname):                                          # Display menu 
 
     while True:
         try:
-            kvfile = openKodiDB(dbtype)                             # Open Kodi video database
+            kvfile = openKodiDB()                                   # Open Kodi video database
             pselect = []
-            mmquery = "SELECT idMovie, idFile, c00 from movie where c00 like ? ORDER BY     \
-            c00 ASC" 
-            msquery = "SELECT idMovie, idFile, c00 from movie where c00 like %s ORDER BY     \
-            c00 ASC"
-            varquery = list([ssname + '%'])
-            if dbtype == 'mysql':
-                kcursor = kvfile.cursor()
-                kcursor.execute(msquery, varquery)
-                kmovies = kcursor.fetchall()                       # Get movies from video database
-                kcursor.close()
-            else:
-                curpf = kvfile.execute(mmquery, varquery)
-                kmovies = curpf.fetchall()                         # Get movies from video database
-                del curpf 
+            curpf = kvfile.execute('SELECT idMovie, idFile, c00 from movie where c00 like ? ORDER BY     \
+            c00 ASC', (ssname + '%',))
+            kmovies = curpf.fetchall()                              # Get movies from video database
             for movie in kmovies:
                 if len(movie[2]) < 1:                               # Handle blank movie names
                     pselect.append('Unknown')
@@ -82,11 +64,12 @@ def displayMovies(ssname, dbtype):                                  # Display me
  
             ddialog = xbmcgui.Dialog()    
             vdate = ddialog.multiselect(translate(30306) + ' - ' + translate(30300), pselect)
+            del curpf    
             kvfile.close()
         except Exception as e:
             xbmc.log('KS Cleaner Movies error. ', xbmc.LOGERROR)
-            if kvfile:            
-                kvfile.close()
+            del curpf             
+            kvfile.close()
             printexception()
             perfdialog = xbmcgui.Dialog()
             dialog_text = translate(30309) + ' ' + translate(30310)
