@@ -5,8 +5,8 @@ import os, sys, linecache, json
 import xbmcaddon
 import xbmcvfs
 import csv  
-from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
-from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, openKodiTeDB, tempDisplay
+from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate, nofeature
+from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, openKodiTeDB, tempDisplay, settings
 from resources.lib.exports import exportData
 from datetime import datetime
 
@@ -14,9 +14,7 @@ addon = xbmcaddon.Addon()
 addon_path = addon.getAddonInfo("path")
 addon_icon = addon_path + '/resources/icon.png'
 
-
-def vanalMenu():                                            # Select table to export
-
+def vanalMenu(dbtype):                                     # Select table to exportanalyze
     try:
         while True:
             stable = []
@@ -25,7 +23,10 @@ def vanalMenu():                                            # Select table to ex
             menuitem3 = translate(30343)
             menuitem4 = translate(30344)
             menuitem5 = translate(30345)
-            menuitem6 = translate(30346)
+            if settings('strictfile') == 'false':
+                menuitem6 = translate(30346)
+            else:
+                menuitem6 = translate(30375)
             menuitem7 = translate(30347)
             menuitem8 = translate(30348)
             menuitem9 = translate(30349)
@@ -43,13 +44,13 @@ def vanalMenu():                                            # Select table to ex
             if stable < 0:                                 # User cancel
                 break
             else:
-                vanalfMenu(selectbl[stable])
+                vanalfMenu(selectbl[stable], dbtype)
 
     except Exception as e:
         printexception()
 
 
-def vanalfMenu(vtable):                                   # Select analyzer function 
+def vanalfMenu(vtable, dbtype):                            # Select analyzer function 
 
     try:
         xbmc.log('Kodi selective cleaner analyzer selection is: ' + vtable, xbmc.LOGDEBUG)
@@ -64,18 +65,19 @@ def vanalfMenu(vtable):                                   # Select analyzer func
         if sfunction < 0:                                 # User cancel
             return
         if menuitem1 in selectfn[sfunction]:
-            alrecs = vdbAnalysis(vtable)
+            alrecs = vdbAnalysis(vtable, dbtype)
             kgenlog = ('Video DB Analysis - ' +  vtable + ' - ' + str(alrecs) + ' unmatched found')
             kgenlogUpdate(kgenlog, 'No')
             if alrecs != None and alrecs > 0:
+                ccounts = getCounts()                      #  Gets counts for output table vheader
                 vheader = getHeader(vtable)
-                tempDisplay(vtable, vheader)
+                tempDisplay(vtable, vheader, ccounts)
             elif alrecs != None and alrecs == 0:
                 displayClean(vtable)
             else:
                 nofeature()
         elif menuitem2 in selectfn[sfunction]:
-            alrecs = vdbAnalysis(vtable)
+            alrecs = vdbAnalysis(vtable, dbtype)
             kgenlog = ('Video DB Analysis CSV - ' +  vtable + ' - ' + str(alrecs) + ' unmatched found')
             kgenlogUpdate(kgenlog, 'No')
             if alrecs != None and alrecs > 0:
@@ -85,12 +87,12 @@ def vanalfMenu(vtable):                                   # Select analyzer func
             else:
                 nofeature() 
         elif menuitem3 in selectfn[sfunction]:
-            alrecs = vdbAnalysis(vtable)
+            alrecs = vdbAnalysis(vtable, dbtype)
             kgenlog = ('Video DB Analysis Clean - ' +  vtable + ' - ' + str(alrecs) + ' unmatched found')
             kgenlogUpdate(kgenlog, 'No')
             if alrecs != None and alrecs > 0:
                 if checkClean(vtable):
-                    ccount = vdbClean(vtable)
+                    ccount = vdbClean(vtable, dbtype)
                     finishClean(vtable, ccount) 
                 else:
                     kgenlog = ('Video DB Analysis Clean - ' +  vtable + ' - user cancelled')
@@ -105,37 +107,89 @@ def vanalfMenu(vtable):                                   # Select analyzer func
         printexception()    
 
 
-def vdbAnalysis(vtable):                                 # Analyze table
+def getCounts():                                        # Get clean and data error counts 
 
     try:
-        kodidb = openKodiDB()
+        countdb = openKscleanDB()
+
+        curc = countdb.execute('SELECT count (*) FROM vdb_temp WHERE clean = "Yes" ')
+        ccount = curc.fetchone()
+        curb = countdb.execute('SELECT count (*) FROM vdb_temp WHERE clean = "No" ')
+        bcount = curb.fetchone()        
+        xbmc.log('KS Cleaner counts: ' + str(bcount[0]) + '  ' + str(ccount[0]), xbmc.LOGDEBUG)        
+        countdb.close()
+
+        return (str(bcount[0]), str(ccount[0]))
+
+    except Exception as e:
+        printexception()  
+
+
+def vdbAnalysis(vtable, dbtype):                        # Analyze table
+
+    try:
+        kodidb = openKodiDB(dbtype)
         outdb = openKscleanDB()
 
-        outdb.execute('DROP table IF EXISTS vdb_temp')      # Drop temporary output table
+        outdb.execute('DROP table IF EXISTS vdb_temp')  # Drop temporary output table
         outdb.commit()
-        kodidb.execute('DROP table IF EXISTS files_temp')   # Drop temporary Kodi table
-        kodidb.commit()
 
-        if vtable == 'actor_link':                       # Check tables for unmatched data  
-            cura = kodidb.execute('SELECT * FROM actor_link WHERE actor_id not in      \
-            (SELECT actor_id FROM actor)')
-            curm = kodidb.execute('SELECT * FROM actor_link WHERE media_id not in      \
-            (SELECT idMovie FROM movie) and media_type = "movie" ')
-            cure = kodidb.execute('SELECT * FROM actor_link WHERE media_id not in      \
-            (SELECT idEpisode FROM episode) and media_type = "episode" ')
-            curt = kodidb.execute('SELECT * FROM actor_link WHERE media_id not in      \
-            (SELECT idShow FROM tvshow) and media_type = "tvshow" ') 
-            curv = kodidb.execute('SELECT * FROM actor_link WHERE media_id not in      \
-            (SELECT idMVideo FROM musicvideo) and media_type = "musicvideo" ') 
-            curs = kodidb.execute('SELECT * FROM actor_link WHERE media_id not in      \
-            (SELECT idSeason FROM seasons) and media_type = "season" ')    
-            alist = cura.fetchall()
-            mlist = curm.fetchall()
-            elist = cure.fetchall()
-            tlist = curt.fetchall()
-            vlist = curv.fetchall()
-            slist = curs.fetchall()
-            del cura, curm, cure, curt, curv, curs
+        dquery = "DROP table IF EXISTS files_temp"
+        try:
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute(dquery)
+                kcursor.commit()
+                kcursor.close()
+            else:
+                kodidb.execute('DROP table IF EXISTS files_temp')   # Drop temporary Kodi table
+                kodidb.commit()
+        except:
+            pass
+
+        if vtable == 'actor_link':                      # Check tables for unmatched data
+            if dbtype == 'mysql':
+                aquery = "SELECT * FROM actor_link WHERE actor_id not in      \
+                (SELECT actor_id FROM actor)"
+                kcursor = kodidb.cursor()
+                kcursor.execute(aquery)
+                alist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM actor_link WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = 'movie'")
+                mlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM actor_link WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = 'espisode'")
+                elist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM actor_link WHERE media_id not in      \
+                (SELECT idShow FROM tvshow) and media_type = 'tvshow'")
+                tlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM actor_link WHERE media_id not in      \
+                (SELECT idMVideo FROM musicvideo) and media_type = 'musicvideo'")
+                vlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM actor_link WHERE media_id not in      \
+                (SELECT idSeason FROM seasons) and media_type = 'season'")
+                slist = kcursor.fetchall()
+                kcursor.close()
+            else:  
+                cura = kodidb.execute('SELECT * FROM actor_link WHERE actor_id not in      \
+                (SELECT actor_id FROM actor)')
+                curm = kodidb.execute('SELECT * FROM actor_link WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = "movie" ')
+                cure = kodidb.execute('SELECT * FROM actor_link WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = "episode" ')
+                curt = kodidb.execute('SELECT * FROM actor_link WHERE media_id not in      \
+                (SELECT idShow FROM tvshow) and media_type = "tvshow" ') 
+                curv = kodidb.execute('SELECT * FROM actor_link WHERE media_id not in      \
+                (SELECT idMVideo FROM musicvideo) and media_type = "musicvideo" ') 
+                curs = kodidb.execute('SELECT * FROM actor_link WHERE media_id not in      \
+                (SELECT idSeason FROM seasons) and media_type = "season" ')    
+                alist = cura.fetchall()
+                mlist = curm.fetchall()
+                elist = cure.fetchall()
+                tlist = curt.fetchall()
+                vlist = curv.fetchall()
+                slist = curs.fetchall()
+                del cura, curm, cure, curt, curv, curs
             kodidb.close()
             orprecs = len(alist) + len(mlist) + len(elist) + len(tlist) + len(vlist) + len(slist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(alist)) + ' ' +  str(len(mlist))  \
@@ -212,11 +266,41 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #==========================  Actor Table analysis ================================
 
-        if vtable == 'actor':                            # Check tables for unmatched data  
-            cura = kodidb.execute('SELECT * FROM actor WHERE actor_id not in (SELECT actor_id         \
-            FROM actor_link where actor_id is not NULL)')
-            alist = cura.fetchall()
-            del cura
+        if vtable == 'actor':                            # Check tables for unmatched data
+            #aquery = "SELECT * FROM actor WHERE actor_id not in (SELECT actor_id FROM actor_link       \
+            #where actor_id is not NULL) or (SELECT actor_id FROM director_link where actor_id is       \
+            #not NULL) "
+            #aquery = "SELECT * FROM actor WHERE actor_id not in (SELECT actor_id FROM actor_link       \
+            #where actor_id is not NULL) or (SELECT actor_id FROM director_link where actor_id is       \
+            #not NULL) " 
+            if dbtype == 'mysql':
+                dquery = "CREATE TABLE files_temp(actor_id INTEGER)"
+                kcursor = kodidb.cursor()
+                kcursor.execute("CREATE TABLE IF NOT EXISTS files_temp(actor_id INT)")
+                kcursor.execute("CREATE INDEX file_1 ON files_temp (actor_id)")
+                kodidb.commit()
+                kcursor.execute("INSERT INTO files_temp (actor_id) select distinct actor_id from actor_link")
+                kcursor.execute("INSERT INTO files_temp (actor_id) select distinct actor_id from director_link")
+                kcursor.execute("INSERT INTO files_temp (actor_id) select distinct actor_id from writer_link")
+                kodidb.commit()
+
+                kcursor.execute("SELECT * FROM actor WHERE actor_id not in          \
+                (SELECT actor_id FROM files_temp)")
+                alist = kcursor.fetchall()
+                kcursor.close()
+            else:
+                kodidb.execute('CREATE TABLE files_temp(actor_id INTEGER)')
+                kodidb.execute('CREATE INDEX IF NOT EXISTS file_1 ON files_temp (actor_id)')
+                kodidb.commit()
+                kodidb.execute('INSERT INTO files_temp (actor_id) select distinct actor_id from actor_link')
+                kodidb.execute('INSERT INTO files_temp (actor_id) select distinct actor_id from director_link')
+                kodidb.execute('INSERT INTO files_temp (actor_id) select distinct actor_id from writer_link')
+                kodidb.commit()
+             
+                cura = kodidb.execute('SELECT * FROM actor WHERE actor_id not in          \
+                (SELECT actor_id FROM files_temp)')
+                alist = cura.fetchall()
+                del cura
             kodidb.close()
             orprecs = len(alist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(alist)), xbmc.LOGDEBUG)
@@ -240,26 +324,48 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #=========================  Art Table analysis ============================
 
-        if vtable == 'art':                       # Check tables for unmatched data 
-            cura = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
-            (SELECT idSet FROM sets) and media_type = "sets" ')
-            curm = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
-            (SELECT idMovie FROM movie) and media_type = "movie" ')
-            cure = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
-            (SELECT idEpisode FROM episode) and media_type = "episode" ')
-            curt = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
-            (SELECT idShow FROM tvshow) and media_type = "tvshow" ') 
-            curv = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
-            (SELECT idMVideo FROM musicvideo) and media_type = "musicvideo" ') 
-            curs = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
-            (SELECT idSeason FROM seasons) and media_type = "season" ')    
-            alist = cura.fetchall()
-            mlist = curm.fetchall()
-            elist = cure.fetchall()
-            tlist = curt.fetchall()
-            vlist = curv.fetchall()
-            slist = curs.fetchall()
-            del cura, curm, cure, curt, curv, curs
+        if vtable == 'art':                       # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM art WHERE media_id not in      \
+                (SELECT idSet FROM sets) and media_type = 'sets' ")
+                alist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM art WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = 'movie' ")
+                mlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM art WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = 'episode' ")
+                elist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM art WHERE media_id not in      \
+                (SELECT idShow FROM tvshow) and media_type = 'tvshow' ")
+                tlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM art WHERE media_id not in      \
+                (SELECT idMVideo FROM musicvideo) and media_type = 'musicvideo' ")
+                vlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM art WHERE media_id not in      \
+                (SELECT idSeason FROM seasons) and media_type = 'season' ")
+                slist = kcursor.fetchall()
+                kcursor.close()
+            else: 
+                cura = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
+                (SELECT idSet FROM sets) and media_type = "sets" ')
+                curm = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = "movie" ')
+                cure = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = "episode" ')
+                curt = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
+                (SELECT idShow FROM tvshow) and media_type = "tvshow" ') 
+                curv = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
+                (SELECT idMVideo FROM musicvideo) and media_type = "musicvideo" ') 
+                curs = kodidb.execute('SELECT * FROM art WHERE media_id not in      \
+                (SELECT idSeason FROM seasons) and media_type = "season" ')    
+                alist = cura.fetchall()
+                mlist = curm.fetchall()
+                elist = cure.fetchall()
+                tlist = curt.fetchall()
+                vlist = curv.fetchall()
+                slist = curs.fetchall()
+                del cura, curm, cure, curt, curv, curs
             kodidb.close()
             orprecs = len(alist) + len(mlist) + len(elist) + len(tlist) + len(vlist) + len(slist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(alist)) + ' ' +  str(len(mlist)) \
@@ -336,20 +442,36 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #==========================  Director_link Table analysis ===========================
 
-        if vtable == 'director_link':                       # Check tables for unmatched data 
-            cura = kodidb.execute('SELECT * FROM director_link WHERE actor_id not in      \
-            (SELECT actor_id FROM actor where actor_id is not NULL)')
-            curm = kodidb.execute('SELECT * FROM director_link WHERE media_id not in      \
-            (SELECT idMovie FROM movie) and media_type = "movie" ')
-            cure = kodidb.execute('SELECT * FROM director_link WHERE media_id not in      \
-            (SELECT idEpisode FROM episode) and media_type = "episode" ')
-            curv = kodidb.execute('SELECT * FROM director_link WHERE media_id not in      \
-            (SELECT idMVideo FROM musicvideo) and media_type = "musicvideo" ')  
-            alist = cura.fetchall()
-            mlist = curm.fetchall()
-            elist = cure.fetchall()
-            vlist = curv.fetchall()
-            del cura, curm, cure, curv
+        if vtable == 'director_link':                       # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM director_link WHERE actor_id not in      \
+                (SELECT actor_id FROM actor where actor_id is not NULL)")
+                alist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM director_link WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = 'movie' ")
+                mlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM director_link WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = 'episode' ")
+                elist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM director_link WHERE media_id not in      \
+                (SELECT idMVideo FROM musicvideo) and media_type = 'musicvideo' ")
+                vlist = kcursor.fetchall()
+                kcursor.close()
+            else: 
+                cura = kodidb.execute('SELECT * FROM director_link WHERE actor_id not in      \
+                (SELECT actor_id FROM actor where actor_id is not NULL)')
+                curm = kodidb.execute('SELECT * FROM director_link WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = "movie" ')
+                cure = kodidb.execute('SELECT * FROM director_link WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = "episode" ')
+                curv = kodidb.execute('SELECT * FROM director_link WHERE media_id not in      \
+                (SELECT idMVideo FROM musicvideo) and media_type = "musicvideo" ')  
+                alist = cura.fetchall()
+                mlist = curm.fetchall()
+                elist = cure.fetchall()
+                vlist = curv.fetchall()
+                del cura, curm, cure, curv
             kodidb.close()
             orprecs = len(alist) + len(mlist) + len(elist) + len(vlist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(alist)) + ' ' +        \
@@ -402,26 +524,48 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #========================  Episode Table analysis =========================
 
-        if vtable == 'episode':                       # Check tables for unmatched data 
-            curf = kodidb.execute('SELECT * FROM episode WHERE idFile not in        \
-            (SELECT idFile FROM files where idFile is not NULL)')
-            curr = kodidb.execute('SELECT * FROM episode WHERE c03 not in           \
-            (SELECT rating_id FROM rating where media_type = "episode") ')
-            curp = kodidb.execute('SELECT * FROM episode WHERE c19 not in           \
-            (SELECT idPath FROM path where idPath is not NULL)')
-            curu = kodidb.execute('SELECT * FROM episode WHERE c20 not in           \
-            (SELECT uniqueid_id FROM uniqueid where media_type = "episode") ') 
-            curt = kodidb.execute('SELECT * FROM episode WHERE idShow not in        \
-            (SELECT idShow FROM tvshow where idShow is not NULL)') 
-            curs = kodidb.execute('SELECT * FROM episode WHERE idSeason not in      \
-            (SELECT idSeason FROM seasons where idSeason is not NULL)')       
-            flist = curf.fetchall()
-            rlist = curr.fetchall()
-            plist = curp.fetchall()
-            ulist = curu.fetchall()
-            tlist = curt.fetchall()
-            slist = curs.fetchall()
-            del curf, curr, curp, curu, curt, curs
+        if vtable == 'episode':                       # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM episode WHERE idFile not in        \
+                (SELECT idFile FROM files where idFile is not NULL)")
+                flist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM episode WHERE c03 not in           \
+                (SELECT rating_id FROM rating where media_type = 'episode') ")
+                rlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM episode WHERE c19 not in           \
+                (SELECT idPath FROM path where idPath is not NULL) ")
+                plist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM episode WHERE c20 not in           \
+                (SELECT uniqueid_id FROM uniqueid where media_type = 'episode') ")
+                ulist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM episode WHERE idShow not in        \
+                (SELECT idShow FROM tvshow where idShow is not NULL) ")
+                tlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM episode WHERE idSeason not in      \
+                (SELECT idSeason FROM seasons where idSeason is not NULL) ")
+                slist = kcursor.fetchall()
+                kcursor.close()
+            else:  
+                curf = kodidb.execute('SELECT * FROM episode WHERE idFile not in        \
+                (SELECT idFile FROM files where idFile is not NULL)')
+                curr = kodidb.execute('SELECT * FROM episode WHERE c03 not in           \
+                (SELECT rating_id FROM rating where media_type = "episode") ')
+                curp = kodidb.execute('SELECT * FROM episode WHERE c19 not in           \
+                (SELECT idPath FROM path where idPath is not NULL)')
+                curu = kodidb.execute('SELECT * FROM episode WHERE c20 not in           \
+                (SELECT uniqueid_id FROM uniqueid where media_type = "episode") ') 
+                curt = kodidb.execute('SELECT * FROM episode WHERE idShow not in        \
+                (SELECT idShow FROM tvshow where idShow is not NULL)') 
+                curs = kodidb.execute('SELECT * FROM episode WHERE idSeason not in      \
+                (SELECT idSeason FROM seasons where idSeason is not NULL)')       
+                flist = curf.fetchall()
+                rlist = curr.fetchall()
+                plist = curp.fetchall()
+                ulist = curu.fetchall()
+                tlist = curt.fetchall()
+                slist = curs.fetchall()
+                del curf, curr, curp, curu, curt, curs
             kodidb.close()
             orprecs = len(flist) + len(rlist) + len(plist) + len(ulist) + len(tlist) + len(slist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(flist)) + ' ' +  str(len(rlist)) \
@@ -490,28 +634,50 @@ def vdbAnalysis(vtable):                                 # Analyze table
             outdb.close()
             return orprecs
 
-        #=========================  Files Table analysis ============================
+        #======================  Files Table Strict analysis =========================
 
-        if vtable == 'files':                       # Check tables for unmatched data
-            
-            kodidb.execute('CREATE TABLE files_temp(idFile INTEGER)')
-            kodidb.execute('CREATE INDEX IF NOT EXISTS file_1 ON files_temp (idFile)')
-            kodidb.commit()
-            kodidb.execute('INSERT INTO files_temp (idFile) select idFile from movie')
-            kodidb.execute('INSERT INTO files_temp (idFile) select idFile from episode')
-            kodidb.execute('INSERT INTO files_temp (idFile) select idFile from musicvideo')
-            kodidb.commit()
+        if 'strict' in vtable:                       # Check tables for unmatched data
+            if dbtype == 'mysql':
+                dquery = "CREATE TABLE files_temp(idFile INTEGER)"
+                kcursor = kodidb.cursor()
+                kcursor.execute("CREATE TABLE IF NOT EXISTS files_temp(idFile INT)")
+                kcursor.execute("CREATE INDEX file_1 ON files_temp (idFile)")
+                kodidb.commit()
+                kcursor.execute("INSERT INTO files_temp (idFile) select distinct idFile from movie")
+                kcursor.execute("INSERT INTO files_temp (idFile) select distinct idFile from episode")
+                kcursor.execute("INSERT INTO files_temp (idFile) select distinct idFile from musicvideo")
+                kodidb.commit()
+
+                kcursor.execute("SELECT * FROM files WHERE idFile not in          \
+                (SELECT idFile FROM files_temp)")
+                flist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM files WHERE idFile not in (SELECT  \
+                idFile FROM streamdetails WHERE iStreamType = '0') ")
+                alist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM files WHERE idFile not in (SELECT  \
+                idFile FROM streamdetails WHERE iStreamType = '1')  ")
+                mlist = kcursor.fetchall()
+                kcursor.close()
+
+            else:            
+                kodidb.execute('CREATE TABLE files_temp(idFile INTEGER)')
+                kodidb.execute('CREATE INDEX IF NOT EXISTS file_1 ON files_temp (idFile)')
+                kodidb.commit()
+                kodidb.execute('INSERT INTO files_temp (idFile) select distinct idFile from movie')
+                kodidb.execute('INSERT INTO files_temp (idFile) select distinct idFile from episode')
+                kodidb.execute('INSERT INTO files_temp (idFile) select distinct idFile from musicvideo')
+                kodidb.commit()
              
-            curf = kodidb.execute('SELECT * FROM files WHERE idFile not in      \
-            (SELECT idFile FROM files_temp)')
-            cura = kodidb.execute('SELECT * FROM files WHERE idFile not in (SELECT  \
-            idFile FROM streamdetails WHERE iStreamType = 0) ')
-            curm = kodidb.execute('SELECT * FROM files WHERE idFile not in (SELECT  \
-            idFile FROM streamdetails WHERE iStreamType = 1) ')
-            alist = cura.fetchall()
-            mlist = curm.fetchall()
-            flist = curf.fetchall()
-            del cura, curm, curf
+                curf = kodidb.execute('SELECT * FROM files WHERE idFile not in          \
+                (SELECT idFile FROM files_temp)')
+                cura = kodidb.execute('SELECT * FROM files WHERE idFile not in (SELECT  \
+                idFile FROM streamdetails WHERE iStreamType = 0) ')
+                curm = kodidb.execute('SELECT * FROM files WHERE idFile not in (SELECT  \
+                idFile FROM streamdetails WHERE iStreamType = 1) ')
+                alist = cura.fetchall()
+                mlist = curm.fetchall()
+                flist = curf.fetchall()
+                del cura, curm, curf
             kodidb.close()
             orprecs = len(alist) + len(mlist) + len(flist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(alist)) + ' ' +  str(len(mlist)) \
@@ -550,29 +716,77 @@ def vdbAnalysis(vtable):                                 # Analyze table
                     values (?, ?, ?, ?, ?)', (flist[a][0], flist[a][1], flist[a][5], 'Yes', acomment))
                 outdb.commit()                          
             outdb.close()
-            kodidb = openKodiDB()            
-            kodidb.execute('DROP table IF EXISTS files_temp')   # Drop temporary Kodi table
-            kodidb.commit()
             kodidb.close()
+            return orprecs
+
+        #=======================  Files Normal Table analysis =============================
+
+        if vtable == 'files':                            # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM files WHERE idPath not in (SELECT idPath FROM       \
+                path  where idPath is not NULL) ")
+                alist = kcursor.fetchall()
+                kcursor.close()
+            else:  
+                cura = kodidb.execute('SELECT * FROM files WHERE idPath not in (SELECT idPath FROM   \
+                path  where idPath is not NULL)')
+                alist = cura.fetchall()
+                del cura
+            kodidb.close()
+            orprecs = len(alist)
+            xbmc.log('Kodi selective cleaner analyzer: ' + str(len(alist)), xbmc.LOGDEBUG)
+            if orprecs == 0:                              # No unmatched records found
+                outdb.close()
+                return 0
+            outdb.execute('CREATE TABLE vdb_temp(idFile integer, idPath integer, strFilename text,    \
+            playCount integer, lastPlayed text, dateAdded text, clean TEXT, comments TEXT)')
+            outdb.commit()
+
+            if len(alist) > 0:                            # Add path unmatcheds
+                for a in range(len(alist)):
+                    acomment = '[COLOR blue]' +  "{:<45}".format('files table path unmatched')                  \
+                    + '[/COLOR]' + "{:10d}".format(int(alist[a][0])) + "{:10d}".format(int(alist[a][1])) +      \
+                    "{:<8}".format(' ') + "{:<16}".format(str(alist[a][5]))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, idPath, dateAdded, clean, comments)  \
+                    values (?, ?, ?, ?, ?)', (alist[a][0], alist[a][1], alist[a][5], 'Yes', acomment))
+                outdb.commit()
+            outdb.close()
             return orprecs
 
 
         #==========================  Genre_link Table analysis ===========================
 
-        if vtable == 'genre_link':                       # Check tables for unmatched data 
-            curm = kodidb.execute('SELECT * FROM genre_link WHERE media_id not in      \
-            (SELECT idMovie FROM movie) and media_type = "movie" ')
-            cure = kodidb.execute('SELECT * FROM genre_link WHERE media_id not in      \
-            (SELECT idEpisode FROM episode) and media_type = "episode" ')
-            curs = kodidb.execute('SELECT * FROM genre_link WHERE media_id not in      \
-            (SELECT idShow FROM tvshow) and media_type = "tvshow" ')
-            curv = kodidb.execute('SELECT * FROM genre_link WHERE media_id not in      \
-            (SELECT idMVideo FROM musicvideo) and media_type = "musicvideo" ')  
-            mlist = curm.fetchall()
-            elist = cure.fetchall()
-            slist = curs.fetchall()
-            vlist = curv.fetchall()
-            del curm, cure, curs, curv
+        if vtable == 'genre_link':                       # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM genre_link WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = 'movie' ")
+                mlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM genre_link WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = 'episode' ")
+                elist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM genre_link WHERE media_id not in      \
+                (SELECT idShow FROM tvshow) and media_type = 'tvshow' ")
+                slist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM genre_link WHERE media_id not in      \
+                (SELECT idMVideo FROM musicvideo) and media_type = 'musicvideo' ")
+                vlist = kcursor.fetchall()
+                kcursor.close()
+            else: 
+                curm = kodidb.execute('SELECT * FROM genre_link WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = "movie" ')
+                cure = kodidb.execute('SELECT * FROM genre_link WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = "episode" ')
+                curs = kodidb.execute('SELECT * FROM genre_link WHERE media_id not in      \
+                (SELECT idShow FROM tvshow) and media_type = "tvshow" ')
+                curv = kodidb.execute('SELECT * FROM genre_link WHERE media_id not in      \
+                (SELECT idMVideo FROM musicvideo) and media_type = "musicvideo" ')  
+                mlist = curm.fetchall()
+                elist = cure.fetchall()
+                slist = curs.fetchall()
+                vlist = curv.fetchall()
+                del curm, cure, curs, curv
             kodidb.close()
             orprecs = len(mlist) + len(elist) + len(slist) + len(vlist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(mlist)) + ' '     \
@@ -627,23 +841,42 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #==========================  Movie Table analysis ============================
 
-        if vtable == 'movie':                       # Check tables for unmatched data 
-            curf = kodidb.execute('SELECT * FROM movie WHERE idFile not in        \
-            (SELECT idFile FROM files where idFile is not NULL)')
-            curr = kodidb.execute('SELECT * FROM movie WHERE c05 not in           \
-            (SELECT rating_id FROM rating where media_type = "movie") ')
-            curp = kodidb.execute('SELECT * FROM movie WHERE c23 not in           \
-            (SELECT idPath FROM path where idPath is not NULL)')
-            curu = kodidb.execute('SELECT * FROM movie WHERE c09 not in           \
-            (SELECT uniqueid_id FROM uniqueid where media_type = "movie") ') 
-            curs = kodidb.execute('SELECT * FROM movie WHERE idSet not in      \
-            (SELECT idSet FROM sets)')       
-            flist = curf.fetchall()
-            rlist = curr.fetchall()
-            plist = curp.fetchall()
-            ulist = curu.fetchall()
-            slist = curs.fetchall()
-            del curf, curr, curp, curu, curs
+        if vtable == 'movie':                       # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM movie WHERE idFile not in        \
+                (SELECT idFile FROM files where idFile is not NULL)")
+                flist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM movie WHERE c05 not in           \
+                (SELECT rating_id FROM rating where media_type = 'movie') ")
+                rlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM movie WHERE c23 not in           \
+                (SELECT idPath FROM path where idPath is not NULL) ")
+                plist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM movie WHERE c09 not in           \
+                (SELECT uniqueid_id FROM uniqueid where media_type = 'movie') ")
+                ulist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM movie WHERE idSet not in         \
+                (SELECT idSet FROM sets) ")
+                slist = kcursor.fetchall()
+                kcursor.close()
+            else:  
+                curf = kodidb.execute('SELECT * FROM movie WHERE idFile not in   \
+                (SELECT idFile FROM files where idFile is not NULL)')
+                curr = kodidb.execute('SELECT * FROM movie WHERE c05 not in      \
+                (SELECT rating_id FROM rating where media_type = "movie") ')
+                curp = kodidb.execute('SELECT * FROM movie WHERE c23 not in      \
+                (SELECT idPath FROM path where idPath is not NULL)')
+                curu = kodidb.execute('SELECT * FROM movie WHERE c09 not in      \
+                (SELECT uniqueid_id FROM uniqueid where media_type = "movie") ') 
+                curs = kodidb.execute('SELECT * FROM movie WHERE idSet not in    \
+                (SELECT idSet FROM sets)')       
+                flist = curf.fetchall()
+                rlist = curr.fetchall()
+                plist = curp.fetchall()
+                ulist = curu.fetchall()
+                slist = curs.fetchall()
+                del curf, curr, curp, curu, curs
             kodidb.close()
             orprecs = len(flist) + len(rlist) + len(plist) + len(ulist) + len(slist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(flist)) + ' ' +  str(len(rlist)) \
@@ -704,14 +937,24 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #=======================  Musicvideo Table analysis ==========================
 
-        if vtable == 'musicvideo':                     # Check tables for unmatched data 
-            curf = kodidb.execute('SELECT * FROM musicvideo WHERE idFile not in        \
-            (SELECT idFile FROM files where idFile is not NULL)')
-            curp = kodidb.execute('SELECT * FROM musicvideo WHERE c14 not in           \
-            (SELECT idPath FROM path where idPath is not NULL)') 
-            flist = curf.fetchall()
-            plist = curp.fetchall()
-            del curf, curp
+        if vtable == 'musicvideo':                     # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM musicvideo WHERE idFile not in        \
+                (SELECT idFile FROM files where idFile is not NULL)")
+                flist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM musicvideo WHERE c14 not in           \
+                (SELECT idPath FROM path where idPath is not NULL)")
+                plist = kcursor.fetchall()
+                kcursor.close()
+            else:   
+                curf = kodidb.execute('SELECT * FROM musicvideo WHERE idFile not in        \
+                (SELECT idFile FROM files where idFile is not NULL)')
+                curp = kodidb.execute('SELECT * FROM musicvideo WHERE c14 not in           \
+                (SELECT idPath FROM path where idPath is not NULL)') 
+                flist = curf.fetchall()
+                plist = curp.fetchall()
+                del curf, curp
             kodidb.close()
             orprecs = len(flist) + len(plist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(flist)) + ' ' +     \
@@ -747,13 +990,23 @@ def vdbAnalysis(vtable):                                 # Analyze table
         #=======================  Seasons Table analysis ==========================
 
         if vtable == 'seasons':                     # Check tables for unmatched data 
-            curt = kodidb.execute('SELECT * FROM seasons WHERE idShow not in        \
-            (SELECT idShow FROM tvshow where idShow is not NULL)')
-            cure = kodidb.execute('SELECT * FROM seasons WHERE idSeason not in      \
-            (SELECT idSeason FROM episode where idSeason is not NULL)') 
-            tlist = curt.fetchall()
-            elist = cure.fetchall()
-            del curt, cure
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM seasons WHERE idShow not in        \
+                (SELECT idShow FROM tvshow where idShow is not NULL) ")
+                tlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM seasons WHERE idSeason not in      \
+                (SELECT idSeason FROM episode where idSeason is not NULL) ")
+                elist = kcursor.fetchall()
+                kcursor.close()
+            else:   
+                curt = kodidb.execute('SELECT * FROM seasons WHERE idShow not in        \
+                (SELECT idShow FROM tvshow where idShow is not NULL)')
+                cure = kodidb.execute('SELECT * FROM seasons WHERE idSeason not in      \
+                (SELECT idSeason FROM episode where idSeason is not NULL)') 
+                tlist = curt.fetchall()
+                elist = cure.fetchall()
+                del curt, cure
             kodidb.close()
             orprecs = len(tlist) + len(elist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(tlist)) + ' ' +     \
@@ -788,11 +1041,18 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #==========================  Sets Table analysis ================================
 
-        if vtable == 'sets':                            # Check tables for unmatched data  
-            cura = kodidb.execute('SELECT * FROM sets WHERE idSet not in (SELECT idSet FROM movie \
-            where idSet is not NULL)')
-            alist = cura.fetchall()
-            del cura
+        if vtable == 'sets':                            # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM sets WHERE idSet not in (SELECT idSet FROM movie      \
+                where idSet is not NULL) ")
+                alist = kcursor.fetchall()
+                kcursor.close()
+            else:  
+                cura = kodidb.execute('SELECT * FROM sets WHERE idSet not in (SELECT idSet FROM movie \
+                where idSet is not NULL)')
+                alist = cura.fetchall()
+                del cura
             kodidb.close()
             orprecs = len(alist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(alist)), xbmc.LOGDEBUG)
@@ -816,14 +1076,24 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #=======================  Streamdetails Table analysis ==========================
 
-        if vtable == 'streamdetails':                   # Check tables for unmatched data 
-            curv = kodidb.execute('SELECT * FROM streamdetails WHERE idFile not in        \
-            (SELECT idFile FROM files where idFile is not NULL) and iStreamType = 0 ')
-            cura = kodidb.execute('SELECT * FROM streamdetails WHERE idFile not in        \
-            (SELECT idFile FROM files where idFile is not NULL)  and iStreamType = 1 ') 
-            vlist = curv.fetchall()
-            alist = cura.fetchall()
-            del curv, cura
+        if vtable == 'streamdetails':                   # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM streamdetails WHERE idFile not in             \
+                (SELECT idFile FROM files where idFile is not NULL) and iStreamType = '0' ")
+                vlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM streamdetails WHERE idFile not in             \
+                (SELECT idFile FROM files where idFile is not NULL)  and iStreamType = '1'  ")
+                alist = kcursor.fetchall()
+                kcursor.close()
+            else:    
+                curv = kodidb.execute('SELECT * FROM streamdetails WHERE idFile not in        \
+                (SELECT idFile FROM files where idFile is not NULL) and iStreamType = 0 ')
+                cura = kodidb.execute('SELECT * FROM streamdetails WHERE idFile not in        \
+                (SELECT idFile FROM files where idFile is not NULL)  and iStreamType = 1 ') 
+                vlist = curv.fetchall()
+                alist = cura.fetchall()
+                del curv, cura
             kodidb.close()
             orprecs = len(vlist) + len(alist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(vlist)) + ' ' +     \
@@ -858,23 +1128,42 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #=======================  Tag_link Table analysis ==========================
 
-        if vtable == 'tag_link':                     # Check tables for unmatched data 
-            curt = kodidb.execute('SELECT * FROM tag_link WHERE tag_id not in                \
-            (SELECT tag_id FROM tag where tag_id is not NULL) ')
-            cure = kodidb.execute('SELECT * FROM tag_link WHERE media_id not in (SELECT      \
-            idEpisode FROM episode where idEpisode is not NULL) and media_type = "episode"')
-            curm = kodidb.execute('SELECT * FROM tag_link WHERE media_id not in (SELECT      \
-            idMovie FROM movie where idMovie is not NULL) and media_type = "movie"') 
-            curv = kodidb.execute('SELECT * FROM tag_link WHERE media_id not in (SELECT      \
-            idMVideo FROM musicvideo where idMVideo is not NULL) and media_type = "musicvideo"') 
-            curs = kodidb.execute('SELECT * FROM tag_link WHERE media_id not in (SELECT      \
-            idShow FROM tvshow where idShow is not NULL) and media_type = "tvshow"') 
-            tlist = curt.fetchall()
-            elist = cure.fetchall()
-            mlist = curm.fetchall()
-            vlist = curv.fetchall()
-            slist = curs.fetchall()
-            del curt, cure, curm, curv, curs
+        if vtable == 'tag_link':                     # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM tag_link WHERE tag_id not in                \
+                (SELECT tag_id FROM tag where tag_id is not NULL) ")
+                tlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM tag_link WHERE media_id not in (SELECT      \
+                idEpisode FROM episode where idEpisode is not NULL) and media_type = 'episode' ")
+                elist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM tag_link WHERE media_id not in (SELECT      \
+                idMovie FROM movie where idMovie is not NULL) and media_type = 'movie' ")
+                mlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM tag_link WHERE media_id not in (SELECT      \
+                idMVideo FROM musicvideo where idMVideo is not NULL) and media_type = 'musicvideo' ")
+                vlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM tag_link WHERE media_id not in (SELECT      \
+                idShow FROM tvshow where idShow is not NULL) and media_type = 'tvshow' ")
+                slist = kcursor.fetchall()
+                kcursor.close()
+            else:  
+                curt = kodidb.execute('SELECT * FROM tag_link WHERE tag_id not in                \
+                (SELECT tag_id FROM tag where tag_id is not NULL) ')
+                cure = kodidb.execute('SELECT * FROM tag_link WHERE media_id not in (SELECT      \
+                idEpisode FROM episode where idEpisode is not NULL) and media_type = "episode"')
+                curm = kodidb.execute('SELECT * FROM tag_link WHERE media_id not in (SELECT      \
+                idMovie FROM movie where idMovie is not NULL) and media_type = "movie"') 
+                curv = kodidb.execute('SELECT * FROM tag_link WHERE media_id not in (SELECT      \
+                idMVideo FROM musicvideo where idMVideo is not NULL) and media_type = "musicvideo"') 
+                curs = kodidb.execute('SELECT * FROM tag_link WHERE media_id not in (SELECT      \
+                idShow FROM tvshow where idShow is not NULL) and media_type = "tvshow"') 
+                tlist = curt.fetchall()
+                elist = cure.fetchall()
+                mlist = curm.fetchall()
+                vlist = curv.fetchall()
+                slist = curs.fetchall()
+                del curt, cure, curm, curv, curs
             kodidb.close()
             orprecs = len(tlist) + len(elist) + len(mlist) + len(vlist) + len(slist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(tlist)) + ' ' +     \
@@ -937,17 +1226,30 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #==========================  TV Show Table analysis ===========================
 
-        if vtable == 'tvshow':                        # Check tables for unmatched data 
-            cure = kodidb.execute('SELECT * FROM tvshow WHERE idShow not in      \
-            (SELECT idShow FROM episode where idShow is not NULL)')
-            curs = kodidb.execute('SELECT * FROM tvshow WHERE idShow not in      \
-            (SELECT idShow FROM seasons where idShow is not NULL) ')
-            curr = kodidb.execute('SELECT * FROM tvshow WHERE c04 not in      \
-            (SELECT rating_id FROM rating where media_type = "tvshow") and c04 is not NULL')  
-            slist = curs.fetchall()
-            elist = cure.fetchall()
-            rlist = curr.fetchall()
-            del curs, cure, curr
+        if vtable == 'tvshow':                        # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM tvshow WHERE idShow not in        \
+                (SELECT idShow FROM episode where idShow is not NULL) ")
+                slist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM tvshow WHERE idShow not in        \
+                (SELECT idShow FROM seasons where idShow is not NULL) ")
+                elist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM tvshow WHERE c04 not in           \
+                (SELECT rating_id FROM rating where media_type = 'tvshow') and c04 is not NULL ")
+                rlist = kcursor.fetchall()
+                kcursor.close()
+            else: 
+                cure = kodidb.execute('SELECT * FROM tvshow WHERE idShow not in   \
+                (SELECT idShow FROM episode where idShow is not NULL)')
+                curs = kodidb.execute('SELECT * FROM tvshow WHERE idShow not in   \
+                (SELECT idShow FROM seasons where idShow is not NULL) ')
+                curr = kodidb.execute('SELECT * FROM tvshow WHERE c04 not in      \
+                (SELECT rating_id FROM rating where media_type = "tvshow") and c04 is not NULL')  
+                slist = curs.fetchall()
+                elist = cure.fetchall()
+                rlist = curr.fetchall()
+                del curs, cure, curr
             kodidb.close()
             orprecs = len(slist) + len(elist) + len(rlist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(slist)) + ' '  \
@@ -991,17 +1293,30 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
         #==========================  Writer_link Table analysis ===========================
 
-        if vtable == 'writer_link':                       # Check tables for unmatched data 
-            cura = kodidb.execute('SELECT * FROM writer_link WHERE actor_id not in      \
-            (SELECT actor_id FROM actor where actor_id is not NULL)')
-            curm = kodidb.execute('SELECT * FROM writer_link WHERE media_id not in      \
-            (SELECT idMovie FROM movie) and media_type = "movie" ')
-            cure = kodidb.execute('SELECT * FROM writer_link WHERE media_id not in      \
-            (SELECT idEpisode FROM episode) and media_type = "episode" ') 
-            alist = cura.fetchall()
-            mlist = curm.fetchall()
-            elist = cure.fetchall()
-            del cura, curm, cure
+        if vtable == 'writer_link':                       # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM writer_link WHERE actor_id not in      \
+                (SELECT actor_id FROM actor where actor_id is not NULL) ")
+                alist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM writer_link WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = 'movie' ")
+                mlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM writer_link WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = 'episode' ")
+                elist = kcursor.fetchall()
+                kcursor.close()
+            else: 
+                cura = kodidb.execute('SELECT * FROM writer_link WHERE actor_id not in      \
+                (SELECT actor_id FROM actor where actor_id is not NULL)')
+                curm = kodidb.execute('SELECT * FROM writer_link WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = "movie" ')
+                cure = kodidb.execute('SELECT * FROM writer_link WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = "episode" ') 
+                alist = cura.fetchall()
+                mlist = curm.fetchall()
+                elist = cure.fetchall()
+                del cura, curm, cure
             kodidb.close()
             orprecs = len(alist) + len(mlist) + len(elist)
             xbmc.log('Kodi selective cleaner analyzer: ' + str(len(alist)) + ' ' +        \
@@ -1045,7 +1360,9 @@ def vdbAnalysis(vtable):                                 # Analyze table
 
      
     except Exception as e:
-        printexception()    
+        kodidb.close()
+        printexception()
+            
 
 def displayClean(vtable):                                 # Clean unmatched analysis
 
@@ -1063,6 +1380,8 @@ def checkClean(vtable):                                   # Check to ensure clea
 
 def finishClean(vtable, recs):                            # Clean unmatched results
 
+    kgenlog = translate(30363) + vtable + ' - ' + str(recs) + translate(30364)
+    kgenlogUpdate(kgenlog)
     dialog_text = translate(30363) + '\n' + vtable + ' - ' + str(recs) + translate(30364)
     xbmcgui.Dialog().ok(translate(30306), dialog_text)
 
@@ -1085,8 +1404,8 @@ def getHeader(vtable):
         elif vtable == 'episode':
              vheader = "{:^48}".format('Table Comparison') +  "{:^15}".format('idEpisode')        \
              + "{:^20}".format('idFile') + "{:<4}".format(' ') + "{:<16}".format('title / c00')
-        elif vtable == 'files':
-             vheader = "{:^66}".format('Table Comparison') +  "{:^15}".format('idFile')           \
+        elif 'files' in vtable:
+             vheader = "{:^48}".format('Table Comparison') +  "{:^15}".format('idFile')           \
              + "{:^20}".format('idPath') + "{:<4}".format(' ') + "{:<16}".format('dateAdded')
         elif vtable == 'genre_link':
              vheader = "{:^48}".format('Table Comparison') +  "{:^15}".format('genre_id')         \
@@ -1123,10 +1442,10 @@ def getHeader(vtable):
         printexception()   
 
 
-def vdbClean(vtable):                                         # Clean video database
+def vdbClean(vtable, dbtype):                                  # Clean video database
 
     try:
-        kodidb = openKodiDB()
+        kodidb = openKodiDB(dbtype)
         cleandb = openKscleanDB()
         recscount = 0
 
@@ -1134,7 +1453,10 @@ def vdbClean(vtable):                                         # Clean video data
         curc = cleandb.execute('SELECT * FROM vdb_temp WHERE clean = "Yes" ')
         recscount = curt.fetchone()[0]
         cleanrecs = curc.fetchall()
-        cleandb.close()
+        #cleandb.close()
+
+        if dbtype == 'mysql':
+            kcursor = kodidb.cursor()
     
         xbmc.log('KS Cleaner records to clean: ' + str(recscount), xbmc.LOGDEBUG)
 
@@ -1142,27 +1464,44 @@ def vdbClean(vtable):                                         # Clean video data
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from actor WHERE actor_id = ? ', (var1,))
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql':
+                    kcursor.execute("DELETE from actor WHERE actor_id = %s"% var1)
+                else:
+                    kodidb.execute('DELETE from actor WHERE actor_id = ? ', (var1,))   
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'actor_id ' + str(var1) + \
                 ' name ' + str(var2))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)  
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()                
             kodidb.close()
+            cleandb.commit()
+            cleandb.close() 
             return recscount    
 
         elif vtable == 'actor_link':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from actor_link WHERE actor_id = ? and media_id = ? and   \
-                media_type = ? ', (var1, var2, var3,))
-                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'actor_id ' + str(var1) + \
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql':
+                    dquery = "DELETE from actor_link WHERE actor_id = %s and media_id = %s and      \
+                    media_type = %s"
+                    varquery = list([var1, var2, var3])   
+                    kcursor.execute(dquery, varquery)
+                else:   
+                    kodidb.execute('DELETE from actor_link WHERE actor_id = ? and media_id = ? and   \
+                    media_type = ? ', (var1, var2, var3,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'actor_id ' + str(var1) +       \
                 ' media_id ' + str(var2) + ' media_type ' + str(var3))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)                
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close() 
             kodidb.close()
+            cleandb.commit()
+            cleandb.close()
             return recscount        
 
         elif vtable == 'art':
@@ -1170,173 +1509,283 @@ def vdbClean(vtable):                                         # Clean video data
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
                 var3 =  cleanrecs[clean][2]
-                var4 =  cleanrecs[clean][3]     
-                kodidb.execute('DELETE from art WHERE art_id = ? and media_id = ? and   \
-                media_type = ? and type = ?', (var1, var2, var3, var4,))
+                var4 =  cleanrecs[clean][3] 
+                if dbtype == 'mysql':
+                    dquery = "DELETE from art WHERE art_id = %s and media_id = %s and   \
+                    media_type = %s and type = %s"
+                    varquery = list([var1, var2, var3, var4])   
+                    kcursor.execute(dquery, varquery)
+                else:    
+                    kodidb.execute('DELETE from art WHERE art_id = ? and media_id = ? and   \
+                    media_type = ? and type = ?', (var1, var2, var3, var4,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'art_id ' + str(var1) + \
                 ' media_id ' + str(var2) + ' media_type ' + str(var3) + ' type ' + str(var4))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)                
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()   
             kodidb.close()
+            cleandb.commit()
+            cleandb.close() 
             return recscount        
 
         elif vtable == 'director_link':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from director_link WHERE actor_id = ? and media_id = ? and   \
-                media_type = ? ', (var1, var2, var3,))
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql':
+                    dquery = "DELETE from director_link WHERE actor_id = %s and media_id = %s and   \
+                    media_type = %s "
+                    varquery = list([var1, var2, var3])   
+                    kcursor.execute(dquery, varquery)
+                else:      
+                    kodidb.execute('DELETE from director_link WHERE actor_id = ? and media_id = ? and   \
+                    media_type = ? ', (var1, var2, var3,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'actor_id ' + str(var1) + \
                 ' media_id ' + str(var2) + ' media_type ' + str(var3))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)                
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()  
             kodidb.close()
+            cleandb.commit()
+            cleandb.close() 
             return recscount
 
         elif vtable == 'episode':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from episode WHERE idEpisode = ? ', (var1,))
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql': 
+                    kcursor.execute("DELETE from episode WHERE idEpisode = %s"% var1)
+                else:    
+                    kodidb.execute('DELETE from episode WHERE idEpisode = ? ', (var1,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idEpisode ' + str(var1) + \
                 ' idFile ' + str(var2) + ' name ' + str(var3))
-                kgenlogUpdate(kgenlog, 'No')               
+                kgenlogUpdate(kgenlog, 'No', cleandb)              
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close() 
             kodidb.close()
+            cleandb.commit()
+            cleandb.close() 
             return recscount    
 
-        elif vtable == 'files':
+        elif 'files' in vtable:
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from files WHERE idFile = ? ', (var1,))
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql': 
+                    kcursor.execute("DELETE from files WHERE idFile = %s"% var1)
+                else:    
+                    kodidb.execute('DELETE from files WHERE idFile = ? ', (var1,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idFile ' + str(var1) + \
                 ' idPath ' + str(var2) + ' dateadded ' + str(var3))
-                kgenlogUpdate(kgenlog, 'No')               
+                kgenlogUpdate(kgenlog, 'No', cleandb)               
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()  
             kodidb.close()
+            cleandb.commit()
+            cleandb.close()
             return recscount   
 
         elif vtable == 'genre_link':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from genre_link WHERE genre_id = ? and media_id = ? and   \
-                media_type = ? ', (var1, var2, var3,))
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql': 
+                    dquery = "DELETE from genre_link WHERE genre_id = %s and media_id = %s and   \
+                    media_type = %s "
+                    varquery = list([var1, var2, var3])   
+                    kcursor.execute(dquery, varquery)
+                else: 
+                    kodidb.execute('DELETE from genre_link WHERE genre_id = ? and media_id = ? and   \
+                    media_type = ? ', (var1, var2, var3,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'genre_id ' + str(var1) + \
                 ' media_id ' + str(var2) + ' media_type ' + str(var3))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)                
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()  
             kodidb.close()
+            cleandb.commit()
+            cleandb.close()
             return recscount
 
         elif vtable == 'movie':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from movie WHERE idMovie = ? ', (var1,))
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql': 
+                    kcursor.execute("DELETE from movie WHERE idMovie = %s"% var1)
+                else:       
+                    kodidb.execute('DELETE from movie WHERE idMovie = ? ', (var1,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idMovie ' + str(var1) + \
                 ' idFile ' + str(var2) + ' name ' + str(var3))
-                kgenlogUpdate(kgenlog, 'No')               
+                kgenlogUpdate(kgenlog, 'No', cleandb)                
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()  
             kodidb.close()
+            cleandb.commit()
+            cleandb.close() 
             return recscount    
 
         elif vtable == 'musicvideo':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from musicvideo WHERE idMVideo = ? ', (var1,))
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql': 
+                    kcursor.execute("DELETE from musicvideo WHERE idMVideo = %s"% var1)
+                else:          
+                    kodidb.execute('DELETE from musicvideo WHERE idMVideo = ? ', (var1,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idMVideo ' + str(var1) + \
                 ' idFile ' + str(var2) + ' name ' + str(var3))
-                kgenlogUpdate(kgenlog, 'No')               
+                kgenlogUpdate(kgenlog, 'No', cleandb)               
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close() 
             kodidb.close()
+            cleandb.commit()
+            cleandb.close() 
             return recscount    
 
         elif vtable == 'seasons':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from seasons WHERE idSeason = ? and idShow = ? ',       \
-                (var1, var2,))
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql': 
+                    dquery = "DELETE from seasons WHERE idSeason = %s and idShow = %s "
+                    varquery = list([var1, var2])   
+                    kcursor.execute(dquery, varquery)
+                else:    
+                    kodidb.execute('DELETE from seasons WHERE idSeason = ? and idShow = ? ',       \
+                    (var1, var2,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idSeason ' + str(var1) + \
                 ' idShow ' + str(var2) + ' name ' + str(var3))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)              
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()  
             kodidb.close()
+            cleandb.commit()
+            cleandb.close() 
             return recscount
 
         elif vtable == 'sets':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
-                var2 =  cleanrecs[clean][1]  
-                kodidb.execute('DELETE from sets WHERE idSet = ? ', (var1,))
+                var2 =  cleanrecs[clean][1]
+                if dbtype == 'mysql': 
+                    kcursor.execute("DELETE from sets WHERE idSet = %s"% var1)
+                else:    
+                    kodidb.execute('DELETE from sets WHERE idSet = ? ', (var1,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idSet ' + str(var1) + \
                 ' strSet ' + str(var2))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)                 
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close() 
             kodidb.close()
+            cleandb.commit()
+            cleandb.close() 
             return recscount
 
         elif vtable == 'streamdetails':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
-                var2 =  cleanrecs[clean][1] 
-                kodidb.execute('DELETE from streamdetails WHERE idFile = ? and iStreamType = ? ', \
-                (var1, var2,))
+                var2 =  cleanrecs[clean][1]
+                if dbtype == 'mysql': 
+                    dquery = "DELETE from streamdetails WHERE idFile = %s and iStreamType = %s "
+                    varquery = list([var1, var2])   
+                    kcursor.execute(dquery, varquery)
+                else:   
+                    kodidb.execute('DELETE from streamdetails WHERE idFile = ? and iStreamType = ? ', \
+                    (var1, var2,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idFile ' + str(var1) + \
                 ' iStreamType ' + str(var2))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)                
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()  
             kodidb.close()
+            cleandb.commit()
+            cleandb.close()
             return recscount
 
         elif vtable == 'tag_link':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from tag_link WHERE tag_id = ? and media_id = ? and   \
-                media_type = ? ', (var1, var2, var3,))
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql': 
+                    dquery = "DELETE from tag_link WHERE tag_id = %s and media_id = %s and   \
+                    media_type = %s "
+                    varquery = list([var1, var2, var3])   
+                    kcursor.execute(dquery, varquery)
+                else:      
+                    kodidb.execute('DELETE from tag_link WHERE tag_id = ? and media_id = ? and   \
+                    media_type = ? ', (var1, var2, var3,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'tag_id ' + str(var1) + \
                 ' media_id ' + str(var2) + ' media_type ' + str(var3))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)                
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()  
             kodidb.close()
+            cleandb.commit()
+            cleandb.close()
             return recscount        
 
         elif vtable == 'tvshow':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
-                var2 =  cleanrecs[clean][1] 
-                kodidb.execute('DELETE from tvshow WHERE idShow = ? ', (var1,))
+                var2 =  cleanrecs[clean][1]
+                if dbtype == 'mysql': 
+                    kcursor.execute("DELETE from tvshow WHERE idShow = %s"% var1)
+                else:     
+                    kodidb.execute('DELETE from tvshow WHERE idShow = ? ', (var1,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idShow ' + str(var1) + \
                 ' name ' + str(var2))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)                
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()  
             kodidb.close()
+            cleandb.commit()
+            cleandb.close()
             return recscount
 
         elif vtable == 'writer_link':
             for clean in range(len(cleanrecs)):
                 var1 =  cleanrecs[clean][0]
                 var2 =  cleanrecs[clean][1]
-                var3 =  cleanrecs[clean][2]   
-                kodidb.execute('DELETE from writer_link WHERE actor_id = ? and media_id = ? and   \
-                media_type = ? ', (var1, var2, var3,))
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql': 
+                    dquery = "DELETE from writer_link WHERE actor_id = %s and media_id = %s and   \
+                    media_type = %s "
+                    varquery = list([var1, var2, var3])   
+                    kcursor.execute(dquery, varquery)
+                else:   
+                   kodidb.execute('DELETE from writer_link WHERE actor_id = ? and media_id = ? and   \
+                   media_type = ? ', (var1, var2, var3,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'actor_id ' + str(var1) + \
                 ' media_id ' + str(var2) + ' media_type ' + str(var3))
-                kgenlogUpdate(kgenlog, 'No')                
+                kgenlogUpdate(kgenlog, 'No', cleandb)               
             kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close() 
             kodidb.close()
+            cleandb.commit()
+            cleandb.close()
             return recscount
 
     except Exception as e:

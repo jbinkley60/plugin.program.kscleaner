@@ -6,6 +6,9 @@ import xbmcvfs
 import os, sys, linecache, os.path
 import json
 from datetime import datetime
+import mysql.connector
+from mysql.connector import errorcode
+import xml.etree.ElementTree as ET
 
 
 def settings(setting, value = None):
@@ -28,23 +31,39 @@ def get_installedversion():
     return str(version_installed)
 
 
-def getDatabaseName():
+def getDatabaseName(dbtype):
     installed_version = get_installedversion()
-    if installed_version == '19':
+    if installed_version == '19' and dbtype == 'local':
         return "MyVideos119.db"
-    elif installed_version == '20':
+    elif installed_version == '19' and dbtype == 'mysql':
+        return "119"
+    elif installed_version == '20'  and dbtype == 'local':
         return "MyVideos121.db"
+    elif installed_version == '20' and dbtype == 'mysql':
+        return "121"
+    elif installed_version == '21'  and dbtype == 'local':
+        return "MyVideos121.db"
+    elif installed_version == '21' and dbtype == 'mysql':
+        return "121"
+
        
     return "" 
 
 
-def getmuDatabaseName():
+def getmuDatabaseName(dbtype):
     installed_version = get_installedversion()
-    if installed_version == '19':
+    if installed_version == '19' and dbtype == 'local':
         return "MyMusic82.db"
-    elif installed_version == '20':
+    elif installed_version == '19' and dbtype == 'mysql':
+        return "82"
+    elif installed_version == '20'  and dbtype == 'local':
         return "MyMusic82.db"
-       
+    elif installed_version == '20' and dbtype == 'mysql':
+        return "82"
+    elif installed_version == '21'  and dbtype == 'local':
+        return "MyMusic82.db"
+    elif installed_version == '21' and dbtype == 'mysql':
+        return "82"      
     return ""  
 
 
@@ -54,33 +73,190 @@ def getteDatabaseName():
         return "Textures13.db"
     elif installed_version == '20':
         return "Textures13.db"
-       
+    elif installed_version == '21':
+        return "Textures13.db"   
+    
     return ""  
 
 
-def openKodiDB():                                   #  Open Kodi database
+def parseConfig(config_file, database, dbtype):
+
     try:
-        from sqlite3 import dbapi2 as sqlite
+        #tree = ET.parse(config_file)
+        with open(file=config_file, mode='r', encoding='utf-8-sig') as xml_txt:                 
+            tree = ET.fromstring((xml_txt.read().replace('&',' ').encode('utf-8')), ET.XMLParser(encoding='utf-8'))
+
+        if database == 'video':
+            vconfig = tree.find('videodatabase')
+            type = vconfig.find('type').text
+            host = vconfig.find('host').text
+            port = vconfig.find('port').text
+            user = vconfig.find('user').text
+            passw = vconfig.find('pass').text
+            dbname = None
+            if vconfig.find('name') != None:
+                dbname = vconfig.find('name').text
+            dbver = getDatabaseName(dbtype)
+            if settings('dbvidname') != 'Default':
+                dbname = settings('dbvidname') 
+            elif dbname != None:
+                dbname = dbname + dbver
+            else:
+                dbname = 'myvideos' + dbver
+            xbmc.log('KS Cleaner parse:' + ' ' + type + ' ' + host + ' ' + port + ' ' + user + ' ' \
+            + passw + ' ' + dbname , xbmc.LOGDEBUG)
+            config = {
+                     'user': user,
+                     'password': passw,
+                     'host': host,
+                     'port': port,
+                     'database': dbname,
+                     'raise_on_warnings': True
+                     }
+            return config
+
+        elif database == 'music':
+            vconfig = tree.find('musicdatabase')
+            type = vconfig.find('type').text
+            host = vconfig.find('host').text
+            port = vconfig.find('port').text
+            user = vconfig.find('user').text
+            passw = vconfig.find('pass').text
+            dbname = None
+            if vconfig.find('name') != None:
+                dbname = vconfig.find('name').text
+            dbver = getmuDatabaseName(dbtype)
+            if settings('dbmusname') != 'Default':
+                dbname = settings('dbvidname') 
+            elif dbname != None:
+                dbname = dbname + dbver
+            else:
+                dbname = 'mymusic' + dbver
+            xbmc.log('KS Cleaner parse:' + ' ' + type + ' ' + host + ' ' + port + ' ' + user + ' ' \
+            + passw + ' ' + dbname , xbmc.LOGDEBUG)
+            config = {
+                     'user': user,
+                     'password': passw,
+                     'host': host,
+                     'port': port,
+                     'database': dbname,
+                     'raise_on_warnings': True
+                     }
+            return config
+
     except:
-        from pysqlite2 import dbapi2 as sqlite
+        printexception()
+        kgenlog = "There is a problem with your MySQL configuration"
+        kgenlogUpdate(kgenlog)
+        xbmcgui.Dialog().ok(translate(30308), translate(30368))
+
+
+def openKodiDB(dbtype):                               #  Open Kodi database
+
+    if dbtype == 'local':
+        try:
+            from sqlite3 import dbapi2 as sqlite
+        except:
+            from pysqlite2 import dbapi2 as sqlite
                       
-    DB = os.path.join(xbmcvfs.translatePath("special://database"), getDatabaseName())
-    db = sqlite.connect(DB)
+        DB = os.path.join(xbmcvfs.translatePath("special://database"), getDatabaseName(dbtype))
+        db = sqlite.connect(DB)
 
-    return(db)    
+        return(db)
+
+    elif dbtype == 'mysql':
+        try:
+            config_file = os.path.join(xbmcvfs.translatePath("special://userdata"), 'advancedsettings.xml')
+            if not os.path.isfile(config_file):
+                 kgenlog = "File not found: " + config_file
+                 kgenlogUpdate(kgenlog)
+                 xbmcgui.Dialog().ok(translate(30308), translate(30374))
+            else:
+                 #kgenlog = "MySQL format selected.  Settings file found for Video database"
+                 #kgenlogUpdate(kgenlog)
+                 config = parseConfig(config_file, 'video', dbtype)
+                 try:
+                     db = mysql.connector.connect(**config)
+                     return (db)
+                 except mysql.connector.Error as err:
+                     if err.errno == 1045:
+                         kgenlog = "KS Cleaner MySQL server userid / password error: " + config['user']
+                         xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                         kgenlogUpdate(kgenlog)
+                     elif err.errno == 1049:
+                         kgenlog = "KS Cleaner MySQL server database not found: " + config['database']
+                         xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                         kgenlogUpdate(kgenlog)
+                     elif err.errno == 2003:
+                         kgenlog = "KS Cleaner could not connect to your MySQL server: " + config['host']
+                         xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                         kgenlogUpdate(kgenlog)                   
+                     else:
+                         kgenlog = "KS Cleaner could not connect to your MySQL server " + config['host']
+                         xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                         kgenlog = 'KS Cleaner MySQL error: ' + str(err)
+                         kgenlogUpdate(kgenlog)
+                 
+        except:
+            printexception()
+            kgenlog = "There is a problem opening your MySQL video database. "
+            kgenlogUpdate(kgenlog)
+            xbmcgui.Dialog().ok(translate(30303), translate(30372))
+            sys.exit()
 
 
-def openKodiMuDB():                                  #  Open Kodi music database
-    try:
-        from sqlite3 import dbapi2 as sqlite
-    except:
-        from pysqlite2 import dbapi2 as sqlite
+def openKodiMuDB(dbtype):                           #  Open Kodi music database
+
+    if dbtype == 'local':
+        try:
+            from sqlite3 import dbapi2 as sqlite
+        except:
+            from pysqlite2 import dbapi2 as sqlite
                       
-    DB = os.path.join(xbmcvfs.translatePath("special://database"), getmuDatabaseName())
-    db = sqlite.connect(DB)
+        DB = os.path.join(xbmcvfs.translatePath("special://database"), getmuDatabaseName(dbtype))
+        db = sqlite.connect(DB)
 
-    return(db)  
+        return(db)  
 
+    elif dbtype == 'mysql':
+        try:
+            config_file = os.path.join(xbmcvfs.translatePath("special://userdata"), 'advancedsettings.xml')
+            if not os.path.isfile(config_file):
+                 kgenlog = "File not found: " + config_file
+                 kgenlogUpdate(kgenlog)
+                 xbmcgui.Dialog().ok(translate(30308), translate(30374))
+            else:
+                 #kgenlog = "MySQL format selected.  Settings file found  for Music database"
+                 #kgenlogUpdate(kgenlog)
+                 config = parseConfig(config_file, 'music', dbtype)
+                 try:
+                     db = mysql.connector.connect(**config)
+                     return (db)
+                 except mysql.connector.Error as err:
+                     if err.errno == 1045:
+                         kgenlog = "KS Cleaner MySQL server userid / password error: " + config['user']
+                         xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                         kgenlogUpdate(kgenlog)
+                     elif err.errno == 1049:
+                         kgenlog = "KS Cleaner MySQL server database not found: " + config['database']
+                         xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                         kgenlogUpdate(kgenlog)
+                     elif err.errno == 2003:
+                         kgenlog = "KS Cleaner could not connect to your MySQL server: " + config['host']
+                         xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                         kgenlogUpdate(kgenlog)                   
+                     else:
+                         kgenlog = "KS Cleaner could not connect to your MySQL server " + config['host']
+                         xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                         kgenlog = 'KS Cleaner MySQL error: ' + str(err)
+                         kgenlogUpdate(kgenlog)
+                 
+        except:
+            printexception()
+            kgenlog = "There is a problem opening your MySQL music database."
+            kgenlogUpdate(kgenlog)
+            xbmcgui.Dialog().ok(translate(30308), translate(30373))
+            sys.exit()
 
 def openKodiTeDB():                                  #  Open Kodi textures database
     try:
@@ -115,9 +291,9 @@ def openKodiOutDB(dbtype):                                #  Open Kodi output da
     fpart = 'kscleaner/' + datetime.now().strftime('%m%d%Y-%H%M%S') + '_'  
 
     if dbtype == 'video':                  
-        ppart = fpart + getDatabaseName()
+        ppart = fpart + getDatabaseName('local')
     elif dbtype == 'music':
-        ppart = fpart + getmuDatabaseName()
+        ppart = fpart + getmuDatabaseName('local')
     elif dbtype == 'texture':
         ppart = fpart + getteDatabaseName()
 
@@ -155,25 +331,29 @@ def checkKscleanDB():                                   #  Verify Kscleaner data
         printexception()
 
 
-def kgenlogUpdate(kgenlog, kdlog = 'Yes'):               #  Add logs to DB
+def kgenlogUpdate(kgenlog, kdlog = 'Yes', dbfile = None):  #  Add logs to DB
 
     try:
         if kdlog == 'Yes':                               #  Write to Kodi logfile
             xbmc.log(kgenlog, xbmc.LOGINFO)
-        mgfile = openKscleanDB()                         #  Open Kscleaner log database
+        if dbfile != None:                               #  DB handle passed for faster cleaning
+            mgfile = dbfile
+        else:
+            mgfile = openKscleanDB()                     #  Open Kscleaner log database
 
         currmsDate = datetime.now().strftime('%Y-%m-%d')
         currmsTime = datetime.now().strftime('%H:%M:%S:%f')
         mgfile.execute('INSERT into kscleanLog(kgDate, kgTime, kgGenDat) values (?, ?, ?)',                \
         (currmsDate, currmsTime, kgenlog))
-     
-        mgfile.commit()
-        mgfile.close()
+
+        if dbfile == None:                              # Commit and close if not cleaning   
+            mgfile.commit()
+            mgfile.close()
     except Exception as e:
         xbmc.log('KS cleaner problem writing to general log DB: ' + str(e), xbmc.LOGERROR)
 
 
-def tempDisplay(vtable, vheader = ''):
+def tempDisplay(vtable, vheader = '', counts = ''):
 
     try:        
         tempdb = openKscleanDB()
@@ -184,7 +364,10 @@ def tempDisplay(vtable, vheader = ''):
         if len(vheader) == 0:        
             textval1 = "{:^128}".format(translate(30357) + ' - ' + vtable )
         else:
-            textval1 = "{:^128}".format(translate(30357) + ' - ' + vtable )  + '\n\n' + vheader 
+            #textval1 = "{:^128}".format(translate(30357) + ' - ' + vtable )  + '\n\n' + vheader
+            textval1 = "{:>72}".format(translate(30357) + ' - ' + vtable ) + '\n'  
+            textval1 = textval1 + '[COLOR blue]' + "{:>48}".format('Clean Count: ' + counts[1]) + '[/COLOR]'
+            textval1 = textval1 + "{:>32}".format('Data Integrity Count: ' + counts[0]) + '\n\n' + vheader
         textval1 = textval1 + '\n' 
 
         if mglogs:

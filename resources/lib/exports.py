@@ -6,7 +6,7 @@ import xbmcaddon
 import xbmcvfs
 import csv  
 from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
-from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, openKodiTeDB
+from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, openKodiTeDB, settings
 from datetime import datetime
 
 addon = xbmcaddon.Addon()
@@ -16,15 +16,17 @@ addon_icon = addon_path + '/resources/icon.png'
 
 def exportData(selectbl, dbtype = None, tablenm = None):         # CSV Output selected table
 
-    try:
+    dbextype = settings('dbtype')
+    dbmuextype = settings('mudbtype')
 
+    try:
         #xbmc.log("KS Cleaner selectable is: " +  str(selectbl), xbmc.LOGNINFO)
 
         folderpath = xbmcvfs.translatePath(os.path.join("special://home/", "output/"))
         if not xbmcvfs.exists(folderpath):
             xbmcvfs.mkdir(folderpath)
             xbmc.log("Kodi Export Output folder not found: " +  str(folderpath), xbmc.LOGINFO)
-
+        selectindex = 100
         for a in range(len(selectbl)):
             fpart = datetime.now().strftime('%H%M%S')
             if dbtype == None :                                  # Logs CSV export
@@ -33,10 +35,10 @@ def exportData(selectbl, dbtype = None, tablenm = None):         # CSV Output se
 
                 #xbmc.log("Mezzmo selectable is: " +  str(selectindex) + ' ' + selectname, xbmc.LOGINFO)
                 if selectindex < 21:                             # Export Kodi video DB tables
-                    dbexport = openKodiDB()
+                    dbexport = openKodiDB(dbextype)
                     dbase = 'videos_'
                 elif selectindex < 41:                           # Export Kodi music DB tables
-                    dbexport = openKodiMuDB()
+                    dbexport = openKodiMuDB(dbmuextype)
                     dbase = 'music_'
                 else:
                     dbexport = openKodiTeDB()                    # Export Kodi video textures tables
@@ -53,9 +55,24 @@ def exportData(selectbl, dbtype = None, tablenm = None):         # CSV Output se
                 outfile = folderpath + "kscleaner_video_analyzer_" + tablenm + "_" + fpart + ".csv"                
             else:
                 outfile = folderpath + "kscleaner_" + dbase + selectname + "_" + fpart + ".csv"
-            curm = dbexport.execute('SELECT * FROM '+selectname+'')
-            recs = curm.fetchall()
-            headers = [i[0] for i in curm.description]
+            if dbextype == 'mysql' and dbtype != 'analyzer' and selectindex < 21:
+                kcursor = dbexport.cursor()
+                kcursor.execute("SELECT * FROM %s"% selectname)
+                recs = kcursor.fetchall()
+                kcursor.column_names
+                headers = [i[0] for i in kcursor.description]
+                kcursor.close()
+            elif dbmuextype == 'mysql' and dbtype != 'analyzer' and selectindex < 41:
+                kcursor = dbexport.cursor()
+                kcursor.execute("SELECT * FROM %s"% selectname)
+                recs = kcursor.fetchall()
+                kcursor.column_names
+                headers = [i[0] for i in kcursor.description]
+                kcursor.close()
+            else: 
+                curm = dbexport.execute('SELECT * FROM '+selectname+'')
+                recs = curm.fetchall()
+                headers = [i[0] for i in curm.description]
             csvFile = csv.writer(open(outfile, 'w', encoding='utf-8'),
                              delimiter=',', lineterminator='\n',
                              quoting=csv.QUOTE_ALL, escapechar='\\')
@@ -76,7 +93,7 @@ def exportData(selectbl, dbtype = None, tablenm = None):         # CSV Output se
                             recitem = rectemp.decode('utf-8').replace('[COLOR blue]', '').replace('[/COLOR]', '')
                         except:
                             if rectemp != None:
-                               recitem = rectemp.replace('[COLOR blue]', '').replace('[/COLOR]', '')
+                               recitem = str(rectemp).replace('[COLOR blue]', '').replace('[/COLOR]', '')
                             else:
                                recitem = rectemp
                     recsencode.append(recitem) 
@@ -90,7 +107,7 @@ def exportData(selectbl, dbtype = None, tablenm = None):         # CSV Output se
     except Exception as e:
         printexception()
         dbexport.close()
-        mgenlog = translate(30320) + selectname
+        mgenlog = translate(30320) + ': ' + selectname
         xbmcgui.Dialog().notification(translate(30308), mgenlog, addon_icon, 5000)            
         xbmc.log(mgenlog, xbmc.LOGINFO)
 
@@ -103,7 +120,9 @@ def selectExport():                                            # Select table to
             selectbl = []
             tables = ["Kodi Video DB - Actors","Kodi Video DB - Episodes","Kodi Video DB - Movies",              \
             "Kodi Video DB - TV Shows","Kodi Video DB - Artwork","Kodi Video DB - Path","Kodi Video DB - Files", \
-            "Kodi Video DB - Streamdetails", "Kodi Video DB - Episode View", "Kodi Video DB - Movie View",       \
+            "Kodi Video DB - Streamdetails", "Kodi Video DB - Seasons", "Kodi Video DB - Episode View",          \
+            "Kodi Video DB - Movie View",  "Kodi Video DB - actor_link", "Kodi Video DB - director_link",        \
+            "Kodi Video DB - writer_link",                                                                       \
             "Kodi Video DB - Music Video View", "Kodi Music DB - Artist","Kodi Music DB - Album Artist View",    \
             "Kodi Music DB - Album View ","Kodi Music DB - Artist View", "Kodi Music DB - Song",                 \
             "Kodi Music DB - Song Artist View","Kodi Music DB - Song View","Kodi Music DB - Path",               \
@@ -129,32 +148,40 @@ def selectExport():                                            # Select table to
             if 7 in stable:
                 selectbl.append('07streamdetails')
             if 8 in stable:
-                selectbl.append('08episode_view')
+                selectbl.append('08seasons')
             if 9 in stable:
-                selectbl.append('09movie_view')
+                selectbl.append('09episode_view')
             if 10 in stable:
-                selectbl.append('10musicvideo_view')
+                selectbl.append('10movie_view')
             if 11 in stable:
-                selectbl.append('21artist')
+                selectbl.append('11actor_link')
             if 12 in stable:
-                selectbl.append('22albumartistview')
+                selectbl.append('12director_link')
             if 13 in stable:
-                selectbl.append('23albumview')
+                selectbl.append('13writer_link')
             if 14 in stable:
-                selectbl.append('24artistview')
+                selectbl.append('14musicvideo_view')
             if 15 in stable:
-                selectbl.append('25song')
+                selectbl.append('21artist')
             if 16 in stable:
-                selectbl.append('26songartistview')
+                selectbl.append('22albumartistview')
             if 17 in stable:
-                selectbl.append('27songview')
+                selectbl.append('23albumview')
             if 18 in stable:
-                selectbl.append('28path')
+                selectbl.append('24artistview')
             if 19 in stable:
-                selectbl.append('41path')
+                selectbl.append('25song')
             if 20 in stable:
-                selectbl.append('42sizes')
+                selectbl.append('26songartistview')
             if 21 in stable:
+                selectbl.append('27songview')
+            if 22 in stable:
+                selectbl.append('28path')
+            if 23 in stable:
+                selectbl.append('41path')
+            if 24 in stable:
+                selectbl.append('42sizes')
+            if 25 in stable:
                 selectbl.append('43texture')
 
             exportData(selectbl)         

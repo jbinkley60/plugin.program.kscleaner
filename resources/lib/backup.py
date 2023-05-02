@@ -15,11 +15,16 @@ addon_path = addon.getAddonInfo("path")
 addon_icon = addon_path + '/resources/icon.png'
 
 
-def backupDB(selectdbs):                                          # Database backup menu
+def backupDB(selectdbs):                                         # Database backup menu
 
+    dbtype = settings('dbtype')
+    mudbtype = settings('mudbtype')
+    if dbtype == 'mysql' or mudbtype == 'mysql':
+        nofeature()
+        return
     try:
 
-        #xbmc.log("KS Cleaner backup selectable is: " +  str(selectdbs), xbmc.LOGNINFO)
+        xbmc.log("KS Cleaner backup selectable is: " +  str(selectdbs), xbmc.LOGINFO)
         dbslength = len(selectdbs)
         dbscompleted = 0
         if dbslength > 0:
@@ -35,7 +40,7 @@ def backupDB(selectdbs):                                          # Database bac
 
         if 'video' in selectdbs:                                 # Video database backup
             dbout = openKodiOutDB('video')                       # open output
-            dbin = openKodiDB()                                  # open input
+            dbin = openKodiDB(dbtype)                            # open input
             with dbout[0]:
                 dbin.backup(dbout[0], pages=100)
             dbout[0].close()
@@ -49,7 +54,7 @@ def backupDB(selectdbs):                                          # Database bac
 
         if 'music' in selectdbs:                                 # Music database backup
             dbout = openKodiOutDB('music')                       # open output
-            dbin = openKodiMuDB()                                # open input
+            dbin = openKodiMuDB(mudbtype)                        # open input
             with dbout[0]:
                 dbin.backup(dbout[0], pages=100)
             dbout[0].close()
@@ -90,8 +95,13 @@ def backupDB(selectdbs):                                          # Database bac
         kgenlogUpdate(kgenlog)
 
 
-def selectBackups():                                            # Select databases to backup
+def selectBackups():                                           # Select databases to backup
 
+    dbtype = settings('dbtype')
+    mudbtype = settings('mudbtype')
+    if dbtype == 'mysql' or mudbtype == 'mysql':
+        nofeature()
+        return
     try:
         while True:
 

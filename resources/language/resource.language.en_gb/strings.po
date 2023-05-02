@@ -276,6 +276,78 @@ msgctxt "#30364"
 msgid " records"
 msgstr ""
 
+msgctxt "#30365"
+msgid "Kodi Local"
+msgstr ""
+
+msgctxt "#30366"
+msgid "MySQL"
+msgstr ""
+
+msgctxt "#30367"
+msgid "Select Video Database Type"
+msgstr ""
+
+msgctxt "#30368"
+msgid "There is a problem with your MySQL configuration"
+msgstr ""
+
+msgctxt "#30369"
+msgid "Movie with idMovie: "
+msgstr ""
+
+msgctxt "#30370"
+msgid " has an invalid movie title."
+msgstr ""
+
+msgctxt "#30371"
+msgid "Select Music Database Type"
+msgstr ""
+
+msgctxt "#30372"
+msgid "There is a problem opening your MySQL video database."
+msgstr ""
+
+msgctxt "#30373"
+msgid "There is a problem opening your MySQL music database."
+msgstr ""
+
+msgctxt "#30374"
+msgid "File not found: advancedsettings.xml"
+msgstr ""
+
+msgctxt "#30375"
+msgid "files - strict checking"
+msgstr ""
+
+msgctxt "#30376"
+msgid "Video DB File Table Strict Cleaning"
+msgstr ""
+
+msgctxt "#30377"
+msgid "MySQL Video Database Name"
+msgstr ""
+
+msgctxt "#30378"
+msgid "MySQL Video Music Name"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
+msgstr ""
+
+msgctxt "#30601"
+msgid "Select the database type Kodi is using.  The default is Kodi local."
+msgstr ""
+
+msgctxt "#30602"
+msgid "Enable to enforce file table entries are matched to movies, music and music video table entries.  See KS CLeaner Wiki for more information.  The default is disabled."
+msgstr ""
+
+msgctxt "#30603"
+msgid "Enter a new value for your MySQL video DB name to override your advancedsettings.xml file name or default.  See the KS Cleaner Wiki for more details"
+msgstr ""
+
+msgctxt "#30604"
+msgid "Enter a new value for your MySQL music DB name to override your advancedsettings.xml file name or default.  See the KS Cleaner Wiki for more details"
 msgstr ""

@@ -15,6 +15,54 @@
 						<popup>false</popup>
 					</control>
 				</setting>
+				<setting id="dbtype" type="string" label="30367" help="30601">
+					<level>0</level>
+					<default>local</default>
+					<constraints>
+						<options>
+							<option label="30365">local</option>
+							<option label="30366">mysql</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
+				<setting id="mudbtype" type="string" label="30371" help="30601">
+					<level>0</level>
+					<default>local</default>
+					<constraints>
+						<options>
+							<option label="30365">local</option>
+							<option label="30366">mysql</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
+				<setting id="dbvidname" type="string" label="30377" help="30603">
+					<level>0</level>
+					<default>Default</default>
+					<dependencies>
+						<dependency type="enable" setting="dbtype">mysql</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>30377</heading>
+					</control>
+				</setting>
+				<setting id="dbmusname" type="string" label="30378" help="30604">
+					<level>0</level>
+					<default>Default</default>
+					<dependencies>
+						<dependency type="enable" setting="mudbtype">mysql</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>30378</heading>
+					</control>
+				</setting>
+				<setting id="strictfile" type="boolean" label="30376" help="30602">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+
 			</group>
 		</category>
 	</section>

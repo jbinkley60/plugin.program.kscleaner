@@ -7,7 +7,8 @@ and Music databases
 
 
 <b>Features:</b>
-- Kodi 19 and 20 compatible.
+- Kodi 19, 20 and 21 compatible.
+- Suppiort for both Kodi Local and MySQL databases
 - Individually select data  in the Kodi video and music databases
 - Database analyzer to find and delete orphaned data
 - Ability to multi-select records to delete.

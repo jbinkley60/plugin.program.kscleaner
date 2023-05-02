@@ -13,26 +13,33 @@ addon = xbmcaddon.Addon()
 addon_path = addon.getAddonInfo("path")
 addon_icon = addon_path + '/resources/icon.png'
 
-def displayMmusic():                                                # Display menu 
+def displayMmusic(dbtype):                                          # Display menu 
 
     while True:
         try:
-            kmfile = openKodiMuDB()                                 # Open Kodi music database
+            kmfile = openKodiMuDB(dbtype)                           # Open Kodi music database
             pselect = []
-            curpf = kmfile.execute('SELECT upper(substr(strAlbum, 1, 1)) FROM album GROUP BY upper(substr(strAlbum, 1, 1))')
-            kmmusic = curpf.fetchall()                             # Get music videos from video database
+            muquery = "SELECT upper(substr(strAlbum, 1, 1)) FROM album GROUP BY upper(substr(strAlbum, 1, 1))"
+            if dbtype == 'mysql':
+                kcursor = kmfile.cursor()
+                kcursor.execute(muquery)
+                kmmusic = kcursor.fetchall()                        # Get music videos from video database
+                kcursor.close()
+            else:
+                curpf = kmfile.execute(muquery)
+                kmmusic = curpf.fetchall()                          # Get music videos from video database
+                del curpf 
             for mmusic in kmmusic:
-                pselect.append(mmusic[0])                          
+                pselect.append(str(mmusic[0]))                          
  
             ddialog = xbmcgui.Dialog()    
             vdate = ddialog.select(translate(30306) + ' - ' + translate(30325), pselect)
-            xbmc.log('Kodi selective cleaner music menu selection is: ' + pselect[vdate], xbmc.LOGDEBUG)
-            del curpf    
+            xbmc.log('Kodi selective cleaner music menu selection is: ' + pselect[vdate], xbmc.LOGDEBUG)   
             kmfile.close()
         except Exception as e:
             xbmc.log('KS Cleaner Music menu error. ', xbmc.LOGERROR)
-            del curpf             
-            kmfile.close()
+            if kmfile:            
+                kmfile.close()
             printexception()
             perfdialog = xbmcgui.Dialog()
             dialog_text = translate(30309) + ' ' + translate(30310)
@@ -43,32 +50,44 @@ def displayMmusic():                                                # Display me
             break      
         else:                                                      # Music album selected
             xbmc.log('KC Cleaner Music Menu selection: ' + str(kmmusic[vdate][0]), xbmc.LOGDEBUG )
-            displayMusic(kmmusic[vdate][0])
+            displayMusic(kmmusic[vdate][0], dbtype)
 
 
-def displayMusic(smname):                                          # Display menu 
+def displayMusic(smname, dbtype):                                  # Display menu 
 
     while True:
         try:
-            kmfile = openKodiMuDB()                                # Open Kodi music database
+            kmfile = openKodiMuDB(dbtype)                          # Open Kodi music database
             pselect = []
-            curpf = kmfile.execute('SELECT idAlbum, strAlbum from album where strAlbum like ? ORDER BY     \
-            strAlbum ASC', (smname + '%',))
-            kmusic = curpf.fetchall()                              # Get music from music database
+            #curpf = kmfile.execute('SELECT idAlbum, strAlbum from album where strAlbum like ? ORDER BY     \
+            #strAlbum ASC', (smname + '%',))
+            mmuquery = "SELECT idAlbum, strAlbum from album where strAlbum like ? ORDER BY     \
+            strAlbum ASC" 
+            msuquery = "SELECT idAlbum, strAlbum from album where strAlbum like %s ORDER BY    \
+            strAlbum ASC"
+            varquery = list([smname + '%'])
+            if dbtype == 'mysql':
+                kcursor = kmfile.cursor()
+                kcursor.execute(msuquery, varquery)
+                kmusic = kcursor.fetchall()                        # Get music from music database
+                kcursor.close()
+            else:
+                curpf = kmfile.execute(mmuquery, varquery)
+                kmusic = curpf.fetchall()                          # Get music from music database
+                del curpf 
             for music in kmusic:
-                if len(music[1]) < 1:                              # Handle blank music names
+                if music[1] == None:                               # Handle blank music names
                     pselect.append('Unknown')
                 else:
-                    pselect.append(music[1])                          
+                    pselect.append(str(music[1]))                          
  
             ddialog = xbmcgui.Dialog()    
             vdate = ddialog.multiselect(translate(30306) + ' - ' + translate(30303), pselect)
-            del curpf    
             kmfile.close()
         except Exception as e:
             xbmc.log('KS Cleaner Music error. ', xbmc.LOGERROR)
-            del curpf             
-            kmfile.close()
+            if kmfile:             
+                kmfile.close()
             printexception()
             perfdialog = xbmcgui.Dialog()
             dialog_text = translate(30309) + ' ' + translate(30310)
