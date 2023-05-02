@@ -26,7 +26,11 @@
 - CSV export now working for all video DB analyzer tables
 - Added clean indicator to both video DB analyzer display and CSV outputs
 0.0.9
-- Added Kodi video DB analyzer clean function to clean orphaned data 
+- Added Kodi video DB analyzer clean function to clean orphaned data
+1.0.0
+- Initial production release
+- Added MySQL support
+- Added strict abd normal file table analysis 
 
  
  
