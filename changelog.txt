@@ -30,7 +30,9 @@
 1.0.0
 - Initial production release
 - Added MySQL support
-- Added strict abd normal file table analysis 
+- Added strict abd normal file table analysis
+1.0.1
+- Fixed bug related to MySQL named music databases causing an exception error
 
  
  
