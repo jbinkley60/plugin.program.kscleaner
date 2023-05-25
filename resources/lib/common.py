@@ -127,7 +127,7 @@ def parseConfig(config_file, database, dbtype):
                 dbname = vconfig.find('name').text
             dbver = getmuDatabaseName(dbtype)
             if settings('dbmusname') != 'Default':
-                dbname = settings('dbvidname') 
+                dbname = settings('dbmusname') 
             elif dbname != None:
                 dbname = dbname + dbver
             else:
