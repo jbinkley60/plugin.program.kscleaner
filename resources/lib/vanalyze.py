@@ -22,23 +22,24 @@ def vanalMenu(dbtype):                                     # Select table to exp
             menuitem2 = translate(30342)
             menuitem3 = translate(30343)
             menuitem4 = translate(30344)
-            menuitem5 = translate(30345)
+            menuitem5 = translate(30345)		   # episode table
             if settings('strictfile') == 'false':
-                menuitem6 = translate(30346)
+                menuitem6 = translate(30346)		   # file table
             else:
                 menuitem6 = translate(30375)
-            menuitem7 = translate(30347)
-            menuitem8 = translate(30348)
-            menuitem9 = translate(30349)
-            menuitem10 = translate(30350)
-            menuitem11 = translate(30351)
-            menuitem12 = translate(30352)
-            menuitem13 = translate(30359)
-            menuitem14 = translate(30360)
-            menuitem15 = translate(30361)
-            selectbl = [menuitem1, menuitem2, menuitem3, menuitem4, menuitem5, menuitem6,   \
-            menuitem13, menuitem7, menuitem8, menuitem14, menuitem9, menuitem10, menuitem15,\
-            menuitem11, menuitem12,]
+            menuitem7 = translate(30347)		   # movie table
+            menuitem8 = translate(30348)		   # musicvideo table
+            menuitem9 = translate(30349)		   # sets table
+            menuitem10 = translate(30350)		   # streamdetails table
+            menuitem11 = translate(30351)		   # tvshow table
+            menuitem12 = translate(30352)		   # writer_link table
+            menuitem13 = translate(30359)		   # genre_link table
+            menuitem14 = translate(30360)		   # seasons table
+            menuitem15 = translate(30361)		   # tag_link table
+            menuitem16 = translate(30379)		   # path table
+            selectbl = [menuitem1, menuitem2, menuitem3, menuitem4, menuitem5, menuitem6,    \
+            menuitem13, menuitem7, menuitem8, menuitem16, menuitem14, menuitem9, menuitem10, \
+            menuitem15, menuitem11, menuitem12,]
             ddialog = xbmcgui.Dialog()    
             stable = ddialog.select(translate(30306) + ' - ' + translate(30340), selectbl)
             if stable < 0:                                 # User cancel
@@ -755,6 +756,43 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
             return orprecs
 
 
+        #============================  Path Table analysis ==============================
+
+        if vtable == 'path':                            # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("select * from path where idPath not in(select idPath from files) and \
+                idPath not in (select idParentPath from path where idParentPath is not NULL) ")
+                alist = kcursor.fetchall()
+                kcursor.close()
+            else:  
+                cura = kodidb.execute('select * from path where idPath not in(select idPath from   \
+                files) and idPath not in (select idParentPath from path where idParentPath is not NULL)')
+                alist = cura.fetchall()
+                del cura
+            kodidb.close()
+            orprecs = len(alist)
+            xbmc.log('Kodi selective cleaner analyzer: ' + str(len(alist)), xbmc.LOGDEBUG)
+            if orprecs == 0:                              # No unmatched records found
+                outdb.close()
+                return 0
+            outdb.execute('CREATE TABLE vdb_temp(idPath integer, strPath text, strContent text,    \
+            dateAdded text, clean TEXT, comments TEXT)')
+            outdb.commit()
+
+            if len(alist) > 0:                            # Add files unmatcheds
+                for a in range(len(alist)):
+                    acomment = '[COLOR blue]' +  "{:<32}".format('path table files unmatched') + '[/COLOR]'       \
+                    + "{:10d}".format(int(alist[a][0])) + "{:<8}".format(' ') + "{:<36}".format(alist[a][1][:36]) \
+                    + "{:<8}".format(' ') + "{:<16}".format(str(alist[a][11]))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(idPath, strPath, strContent, dateAdded,      \
+                    clean, comments) values (?, ?, ?, ?, ?, ?)', (alist[a][0], alist[a][1], alist[a][2],        \
+                    alist[a][11], 'Yes', acomment))
+                outdb.commit()
+            outdb.close()
+            return orprecs
+
+
         #==========================  Genre_link Table analysis ===========================
 
         if vtable == 'genre_link':                       # Check tables for unmatched data
@@ -1407,6 +1445,9 @@ def getHeader(vtable):
         elif 'files' in vtable:
              vheader = "{:^48}".format('Table Comparison') +  "{:^15}".format('idFile')           \
              + "{:^20}".format('idPath') + "{:<4}".format(' ') + "{:<16}".format('dateAdded')
+        elif 'path' in vtable:
+             vheader = "{:^40}".format('Table Comparison') +  "{:^15}".format('idPath')           \
+             + "{:^64}".format('strPath') + "{:<4}".format(' ') + "{:<16}".format('dateAdded')
         elif vtable == 'genre_link':
              vheader = "{:^48}".format('Table Comparison') +  "{:^15}".format('genre_id')         \
              + "{:^20}".format('media_id') + "{:<4}".format(' ') + "{:<16}".format('media_type')
@@ -1583,6 +1624,26 @@ def vdbClean(vtable, dbtype):                                  # Clean video dat
                 else:    
                     kodidb.execute('DELETE from files WHERE idFile = ? ', (var1,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idFile ' + str(var1) + \
+                ' idPath ' + str(var2) + ' dateadded ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No', cleandb)               
+            kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close()  
+            kodidb.close()
+            cleandb.commit()
+            cleandb.close()
+            return recscount   
+
+        elif 'path' in vtable:
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][3]
+                if dbtype == 'mysql': 
+                    kcursor.execute("DELETE from path WHERE idPath = %s"% var1)
+                else:    
+                    kodidb.execute('DELETE from path WHERE idPath = ? ', (var1,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idPath ' + str(var1) + \
                 ' idPath ' + str(var2) + ' dateadded ' + str(var3))
                 kgenlogUpdate(kgenlog, 'No', cleandb)               
             kodidb.commit()
