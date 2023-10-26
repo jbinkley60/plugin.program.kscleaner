@@ -4,16 +4,16 @@ import xbmcplugin
 import os
 import xbmcaddon
 import xbmcvfs
-from .common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
-from .common import kgenlogUpdate, checkKscleanDB, nofeature, settings
-from .logs import displayGenLogs
-from .tvshows import displayTvshows
-from .movies import displayMovieMenu
-from .mvideos import displayMvideos
-from .music import displayMmusic
-from .exports import selectExport
-from .backup import selectBackups
-from .vanalyze import vanalMenu
+from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
+from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, settings
+from resources.lib.logs import displayGenLogs
+from resources.lib.tvshows import displayTvshows
+from resources.lib.movies import displayMovieMenu
+from resources.lib.mvideos import displayMvideos
+from resources.lib.music import displayMmusic
+from resources.lib.exports import selectExport
+from resources.lib.backup import selectBackups
+from resources.lib.vanalyze import vanalMenu
 import mysql.connector
 
 from datetime import datetime

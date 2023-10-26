@@ -4,8 +4,8 @@ import xbmcplugin
 import os
 import xbmcaddon
 import xbmcvfs
-from .common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
-from .common import kgenlogUpdate, checkKscleanDB, nofeature
+from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
+from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature
 
 from datetime import datetime
 

@@ -5,9 +5,9 @@ import os, sys, linecache
 from pathlib import Path
 import xbmcaddon
 import xbmcvfs
-from .common import openKodiDB, openKodiMuDB, openKscleanDB, printexception
-from .common import kgenlogUpdate, checkKscleanDB, nofeature, openKodiTeDB
-from .common import openKodiOutDB, translate, settings
+from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception
+from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, openKodiTeDB
+from resources.lib.common import openKodiOutDB, translate, settings
 from datetime import datetime
 
 addon = xbmcaddon.Addon()

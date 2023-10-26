@@ -35,6 +35,8 @@
 - Fixed bug related to MySQL named music databases causing an exception error
 1.0.2 08/28/2023
 - Added path table to video DB analyzer / cleaner
+1.0.3 10/21/2023
+- Added support for Kodi 21 Omega Alpha3 and higher 
 
  
  

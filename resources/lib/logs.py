@@ -5,9 +5,9 @@ import os
 import xbmcaddon
 import xbmcvfs
 import csv 
-from .common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
-from .common import kgenlogUpdate, checkKscleanDB, nofeature
-from .exports import exportData
+from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
+from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature
+from resources.lib.exports import exportData
 from datetime import datetime
 
 addon = xbmcaddon.Addon()
