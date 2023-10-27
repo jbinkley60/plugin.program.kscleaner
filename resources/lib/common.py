@@ -16,7 +16,17 @@ def settings(setting, value = None):
     if value:
         xbmcaddon.Addon().setSetting(setting, value)
     else:
-        return xbmcaddon.Addon().getSetting(setting)   
+        return xbmcaddon.Addon().getSetting(setting)  
+
+
+def getPythonVersion():                 # get Python version
+
+    pythinfo = sys.version_info
+    pythver = str(pythinfo[0]) + '.' + str(pythinfo[1]) + '.' + str(pythinfo[2])
+    kgenlog = 'Kodi Selective Cleaner Python vesion is: ' + pythver
+    kgenlogUpdate(kgenlog)
+    return pythver
+ 
 
 def translate(text):
     return xbmcaddon.Addon().getLocalizedString(text)
@@ -325,6 +335,7 @@ def checkKscleanDB():                                   #  Verify Kscleaner data
 
         kgenlog ='KS Cleaner logging database check successful.  Addon started.'
         kgenlogUpdate(kgenlog)
+        getPythonVersion()
 
     except Exception as e:
         xbmc.log('KS Cleaner logging database check error.', xbmc.LOGERROR)
