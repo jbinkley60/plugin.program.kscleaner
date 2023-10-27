@@ -292,7 +292,7 @@ def openKscleanDB():                                 #  Open Kscleaner database
     return(dbsync)
 
 
-def openKodiOutDB(dbtype):                                #  Open Kodi output database
+def openKodiOutDB(dbtype, fcopy='no'):                    #  Open Kodi output database
     try:
         from sqlite3 import dbapi2 as sqlite
     except:
@@ -309,9 +309,11 @@ def openKodiOutDB(dbtype):                                #  Open Kodi output da
 
     DB = os.path.join(xbmcvfs.translatePath("special://database"), ppart)
     dbpath = os.path.join(xbmcvfs.translatePath("special://database"), 'kscleaner')
-    db = sqlite.connect(DB)
-
-    return[db, ppart, dbpath]   
+    if fcopy == 'no':
+        db = sqlite.connect(DB)
+    else:
+        db = ''
+    return[db, ppart, dbpath, DB]   
  
 
 def checkKscleanDB():                                   #  Verify Kscleaner database

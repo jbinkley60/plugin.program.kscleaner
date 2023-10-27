@@ -1,13 +1,14 @@
 import xbmc
 import xbmcgui
 import xbmcplugin
-import os, sys, linecache
+import os, sys, linecache, shutil
 from pathlib import Path
 import xbmcaddon
 import xbmcvfs
 from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception
 from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, openKodiTeDB
-from resources.lib.common import openKodiOutDB, translate, settings
+from resources.lib.common import openKodiOutDB, translate, settings, getPythonVersion
+from resources.lib.common import getDatabaseName, getmuDatabaseName, getteDatabaseName
 from datetime import datetime
 
 addon = xbmcaddon.Addon()
@@ -19,11 +20,24 @@ def backupDB(selectdbs):                                         # Database back
 
     dbtype = settings('dbtype')
     mudbtype = settings('mudbtype')
+    backtype = 'normal'
     if dbtype == 'mysql' or mudbtype == 'mysql':
         nofeature()
         return
-    try:
 
+    pyver = getPythonVersion()                                   # Determine backup type by Python version
+    pyversion = pyver.split('.')
+    if int(pyversion[0]) < 3:                                    # Python 2 not supported
+        nofeature() 
+        return
+    elif int(pyversion[0]) == 3 and int(pyversion[1]) <= 6:      # File backups for Python 3.6 and below
+        backtype = 'file'
+
+    kgenlog = 'Kodi Selective Cleaner backup type is: ' + backtype
+    kgenlogUpdate(kgenlog)             
+
+    try:
+        dbpath = os.path.join(xbmcvfs.translatePath("special://database"), 'kscleaner')
         xbmc.log("KS Cleaner backup selectable is: " +  str(selectdbs), xbmc.LOGINFO)
         dbslength = len(selectdbs)
         dbscompleted = 0
@@ -39,12 +53,18 @@ def backupDB(selectdbs):                                         # Database back
         folderpath = 'kodi/userdata/Database/kscleaner/'
 
         if 'video' in selectdbs:                                 # Video database backup
-            dbout = openKodiOutDB('video')                       # open output
-            dbin = openKodiDB(dbtype)                            # open input
-            with dbout[0]:
-                dbin.backup(dbout[0], pages=100)
-            dbout[0].close()
-            dbin.close()
+            if backtype == 'file':
+                dbout = openKodiOutDB('video', 'yes')            # open output file copy mode
+                infile = os.path.join(xbmcvfs.translatePath("special://database"), getDatabaseName('local'))
+                shutil.copyfile(infile, dbout[3])
+                #xbmc.log("KS Cleaner fileinfo is: " +  infile + ' ' + str(dbout[3]), xbmc.LOGINFO)
+            else:
+                dbout = openKodiOutDB('video')                   # open output
+                dbin = openKodiDB(dbtype)                        # open input
+                with dbout[0]:
+                    dbin.backup(dbout[0], pages=100)
+                dbout[0].close()
+                dbin.close()
             dbscompleted += 1
             checkBackups(dbout[2], 'MyVideos')                   # Limit number of backups
             kgenlog ='Kodi Video DB backup successful: ' + dbout[1].split('/')[1]
@@ -53,12 +73,18 @@ def backupDB(selectdbs):                                         # Database back
             xbmc.sleep(2000) 
 
         if 'music' in selectdbs:                                 # Music database backup
-            dbout = openKodiOutDB('music')                       # open output
-            dbin = openKodiMuDB(mudbtype)                        # open input
-            with dbout[0]:
-                dbin.backup(dbout[0], pages=100)
-            dbout[0].close()
-            dbin.close()
+            if backtype == 'file':
+                dbout = openKodiOutDB('music', 'yes')            # open output file copy mode
+                infile = os.path.join(xbmcvfs.translatePath("special://database"), getmuDatabaseName('local'))
+                shutil.copyfile(infile, dbout[3])
+                #xbmc.log("KS Cleaner fileinfo is: " +  infile + ' ' + str(dbout[3]), xbmc.LOGINFO)
+            else:
+                dbout = openKodiOutDB('music')                   # open output
+                dbin = openKodiMuDB(mudbtype)                    # open input
+                with dbout[0]:
+                    dbin.backup(dbout[0], pages=100)
+                dbout[0].close()
+                dbin.close()
             dbscompleted += 1
             checkBackups(dbout[2], 'MyMusic')                    # Limit number of backups
             kgenlog ='Kodi Music DB backup successful: ' + dbout[1].split('/')[1]
@@ -67,12 +93,18 @@ def backupDB(selectdbs):                                         # Database back
             xbmc.sleep(2000) 
 
         if 'texture' in selectdbs:                               # Textures database backup
-            dbout = openKodiOutDB('texture')                     # open output
-            dbin = openKodiTeDB()                                # open input
-            with dbout[0]:
-                dbin.backup(dbout[0], pages=100)
-            dbout[0].close()
-            dbin.close()
+            if backtype == 'file':
+                dbout = openKodiOutDB('texture', 'yes')          # open output file copy mode
+                infile = os.path.join(xbmcvfs.translatePath("special://database"), getteDatabaseName())
+                shutil.copyfile(infile, dbout[3])
+                #xbmc.log("KS Cleaner fileinfo is: " +  infile + ' ' + str(dbout[3]), xbmc.LOGINFO)
+            else:
+                dbout = openKodiOutDB('texture')                 # open output 
+                dbin = openKodiTeDB()                            # open input
+                with dbout[0]:
+                    dbin.backup(dbout[0], pages=100)
+                dbout[0].close()
+                dbin.close()
             dbscompleted += 1
             checkBackups(dbout[2], 'Textures')                   # Limit number of backups
             kgenlog ='Kodi Textures DB backup successful: ' + dbout[1].split('/')[1] 
