@@ -336,6 +336,14 @@ msgctxt "#30379"
 msgid "path"
 msgstr ""
 
+msgctxt "#30380"
+msgid "Clean All Tables"
+msgstr ""
+
+msgctxt "#30381"
+msgid "Clean All Tables Option"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
 msgstr ""
@@ -354,4 +362,8 @@ msgstr ""
 
 msgctxt "#30604"
 msgid "Enter a new value for your MySQL music DB name to override your advancedsettings.xml file name or default.  See the KS Cleaner Wiki for more details"
+msgstr ""
+
+msgctxt "#30605"
+msgid "Enables an option to clean all tables from a single menu selection.  Default is disabled."
 msgstr ""

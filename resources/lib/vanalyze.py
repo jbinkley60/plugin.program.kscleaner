@@ -18,6 +18,7 @@ def vanalMenu(dbtype):                                     # Select table to exp
     try:
         while True:
             stable = []
+            menuitem0 = translate(30380)
             menuitem1 = translate(30341)
             menuitem2 = translate(30342)
             menuitem3 = translate(30343)
@@ -37,13 +38,17 @@ def vanalMenu(dbtype):                                     # Select table to exp
             menuitem14 = translate(30360)		   # seasons table
             menuitem15 = translate(30361)		   # tag_link table
             menuitem16 = translate(30379)		   # path table
-            selectbl = [menuitem1, menuitem2, menuitem3, menuitem4, menuitem5, menuitem6,    \
+            selectbl = [menuitem1, menuitem2, menuitem3, menuitem4, menuitem5,  menuitem6,   \
             menuitem13, menuitem7, menuitem8, menuitem16, menuitem14, menuitem9, menuitem10, \
-            menuitem15, menuitem11, menuitem12,]
+            menuitem15, menuitem11, menuitem12]
+            if settings('cleanall') == 'true':             # Add clean all option
+                selectbl.insert(0, menuitem0)
             ddialog = xbmcgui.Dialog()    
             stable = ddialog.select(translate(30306) + ' - ' + translate(30340), selectbl)
             if stable < 0:                                 # User cancel
                 break
+            elif selectbl[stable] == menuitem0:            # Analyze all tables
+                cleanAll(selectbl, dbtype) 
             else:
                 vanalfMenu(selectbl[stable], dbtype)
 
@@ -123,7 +128,34 @@ def getCounts():                                        # Get clean and data err
         return (str(bcount[0]), str(ccount[0]))
 
     except Exception as e:
-        printexception()  
+        printexception()
+
+
+def cleanAll(selectbl, dbtype):                         # Clean all tables
+
+    try:
+        if checkClean('All Tables'):
+            clncount = 0                                # Track records cleaned
+            del selectbl[0]                             # Build list of tables to clean
+            kgenlog = 'User selected to clean all tables '
+            kgenlogUpdate(kgenlog)
+
+            for x in range(len(selectbl)):              # Analyze and clean all tables              
+                vtable = selectbl[x]
+                alrecs = vdbAnalysis(vtable, dbtype)        
+                if alrecs != None and alrecs == 0:      # Table was clean
+                    kgenlog = 'Table analysis was clean: ' + selectbl[x]
+                    kgenlogUpdate(kgenlog)                    
+                else:
+                    ccount = vdbClean(vtable, dbtype)   # Get cleaned record count
+                    clncount = clncount + ccount
+                    kgenlog = 'Table records cleaned: ' + str(ccount) + ' ' +  selectbl[x]
+                    kgenlogUpdate(kgenlog)
+
+            finishClean('All Tables', clncount)                            
+
+    except Exception as e:
+        printexception()
 
 
 def vdbAnalysis(vtable, dbtype):                        # Analyze table
