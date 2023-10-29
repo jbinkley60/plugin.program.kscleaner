@@ -139,19 +139,28 @@ def cleanAll(selectbl, dbtype):                         # Clean all tables
             del selectbl[0]                             # Build list of tables to clean
             kgenlog = 'User selected to clean all tables '
             kgenlogUpdate(kgenlog)
+            msgdialogprogress = xbmcgui.DialogProgress()
+            dialogmsg = 'Begin cleaning ' + str(len(selectbl)) + ' tables'
+            dialoghead = translate(30306) + '- Clean all tables'
+            msgdialogprogress.create(dialoghead, dialogmsg)
+            xbmc.sleep(1500)
 
             for x in range(len(selectbl)):              # Analyze and clean all tables              
                 vtable = selectbl[x]
                 alrecs = vdbAnalysis(vtable, dbtype)        
                 if alrecs != None and alrecs == 0:      # Table was clean
                     kgenlog = 'Table analysis was clean: ' + selectbl[x]
-                    kgenlogUpdate(kgenlog)                    
+                    kgenlogUpdate(kgenlog, 'No')                    
                 else:
                     ccount = vdbClean(vtable, dbtype)   # Get cleaned record count
                     clncount = clncount + ccount
                     kgenlog = 'Table records cleaned: ' + str(ccount) + ' ' +  selectbl[x]
                     kgenlogUpdate(kgenlog)
-
+                tprogress = int(((x + 1) / float(len(selectbl))) * 100)
+                ddialogmsg = str(x + 1) + ' tables cleaned - ' + selectbl[x]
+                msgdialogprogress.update(tprogress, ddialogmsg)
+                xbmc.sleep(1000)
+            msgdialogprogress.close() 
             finishClean('All Tables', clncount)                            
 
     except Exception as e:
