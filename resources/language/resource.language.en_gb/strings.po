@@ -344,6 +344,38 @@ msgctxt "#30381"
 msgid "Clean All Tables Option"
 msgstr ""
 
+msgctxt "#30382"
+msgid "Verify Music DB Triggers"
+msgstr ""
+
+msgctxt "#30383"
+msgid "Off"
+msgstr ""
+
+msgctxt "#30384"
+msgid "On"
+msgstr ""
+
+msgctxt "#30385"
+msgid "Notify"
+msgstr ""
+
+msgctxt "#30386"
+msgid "Notify"
+msgstr ""
+
+msgctxt "#30387"
+msgid "Missing Music DB Trigger"
+msgstr ""
+
+msgctxt "#30388"
+msgid "MySQL music DB trigger repair not currently supported.  See logs for missing trigger."
+msgstr ""
+
+msgctxt "#30389"
+msgid "Do you want KS Cleaner to repair the missing trigger ?"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
 msgstr ""
@@ -366,4 +398,8 @@ msgstr ""
 
 msgctxt "#30605"
 msgid "Enables an option to clean all tables from a single menu selection.  Default is disabled."
+msgstr ""
+
+msgctxt "#30606"
+msgid "Enables an option to verify and repair missing music database triggers.  On is automatic repair.  Notify provides a GUI notification.  Default is Off."
 msgstr ""

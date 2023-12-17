@@ -52,9 +52,9 @@ def getDatabaseName(dbtype):
     elif installed_version == '20' and dbtype == 'mysql':
         return "121"
     elif installed_version == '21'  and dbtype == 'local':
-        return "MyVideos122.db"
+        return "MyVideos123.db"
     elif installed_version == '21' and dbtype == 'mysql':
-        return "122"
+        return "123"
 
        
     return "" 

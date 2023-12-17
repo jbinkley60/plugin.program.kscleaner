@@ -39,8 +39,11 @@
 - Added support for Kodi 21 Omega Alpha3 and higher
 1.0.4
 - Added detection for Python version
-- Added file copy databae backups for Python 3.6 and below
+- Added file copy database backups for Python 3.6 and below
 - Added single click clean all tables option 
+- Updated video database to align to Kodi change with Kodi 21 beta 2
+- Aded option to check and replace missing music database triggers for Local
+  databases and detection for MySQL with the standard Kodi database naming 
 
  
  
