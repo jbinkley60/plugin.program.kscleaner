@@ -52,9 +52,9 @@ def getDatabaseName(dbtype):
     elif installed_version == '20' and dbtype == 'mysql':
         return "121"
     elif installed_version == '21'  and dbtype == 'local':
-        return "MyVideos123.db"
+        return "MyVideos124.db"
     elif installed_version == '21' and dbtype == 'mysql':
-        return "123"
+        return "124"
 
        
     return "" 
@@ -176,7 +176,7 @@ def openKodiDB(dbtype):                               #  Open Kodi database
 
     elif dbtype == 'mysql':
         try:
-            config_file = os.path.join(xbmcvfs.translatePath("special://userdata"), 'advancedsettings.xml')
+            config_file = os.path.join(xbmcvfs.translatePath("special://profile"), 'advancedsettings.xml')
             if not os.path.isfile(config_file):
                  kgenlog = "File not found: " + config_file
                  kgenlogUpdate(kgenlog)
@@ -230,7 +230,7 @@ def openKodiMuDB(dbtype):                           #  Open Kodi music database
 
     elif dbtype == 'mysql':
         try:
-            config_file = os.path.join(xbmcvfs.translatePath("special://userdata"), 'advancedsettings.xml')
+            config_file = os.path.join(xbmcvfs.translatePath("special://profile"), 'advancedsettings.xml')
             if not os.path.isfile(config_file):
                  kgenlog = "File not found: " + config_file
                  kgenlogUpdate(kgenlog)

@@ -50,7 +50,7 @@ def backupDB(selectdbs):                                         # Database back
         else:
             return
 
-        folderpath = 'kodi/userdata/Database/kscleaner/'
+        folderpath = xbmcvfs.translatePath(os.path.join("special://profile/", "Database/kscleaner/"))
 
         if 'video' in selectdbs:                                 # Video database backup
             if backtype == 'file':
