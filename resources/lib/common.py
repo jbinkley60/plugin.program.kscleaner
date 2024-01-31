@@ -16,7 +16,17 @@ def settings(setting, value = None):
     if value:
         xbmcaddon.Addon().setSetting(setting, value)
     else:
-        return xbmcaddon.Addon().getSetting(setting)   
+        return xbmcaddon.Addon().getSetting(setting)  
+
+
+def getPythonVersion():                 # get Python version
+
+    pythinfo = sys.version_info
+    pythver = str(pythinfo[0]) + '.' + str(pythinfo[1]) + '.' + str(pythinfo[2])
+    kgenlog = 'Kodi Selective Cleaner Python vesion is: ' + pythver
+    kgenlogUpdate(kgenlog)
+    return pythver
+ 
 
 def translate(text):
     return xbmcaddon.Addon().getLocalizedString(text)
@@ -42,9 +52,9 @@ def getDatabaseName(dbtype):
     elif installed_version == '20' and dbtype == 'mysql':
         return "121"
     elif installed_version == '21'  and dbtype == 'local':
-        return "MyVideos122.db"
+        return "MyVideos124.db"
     elif installed_version == '21' and dbtype == 'mysql':
-        return "122"
+        return "124"
 
        
     return "" 
@@ -282,7 +292,7 @@ def openKscleanDB():                                 #  Open Kscleaner database
     return(dbsync)
 
 
-def openKodiOutDB(dbtype):                                #  Open Kodi output database
+def openKodiOutDB(dbtype, fcopy='no'):                    #  Open Kodi output database
     try:
         from sqlite3 import dbapi2 as sqlite
     except:
@@ -299,9 +309,11 @@ def openKodiOutDB(dbtype):                                #  Open Kodi output da
 
     DB = os.path.join(xbmcvfs.translatePath("special://database"), ppart)
     dbpath = os.path.join(xbmcvfs.translatePath("special://database"), 'kscleaner')
-    db = sqlite.connect(DB)
-
-    return[db, ppart, dbpath]   
+    if fcopy == 'no':
+        db = sqlite.connect(DB)
+    else:
+        db = ''
+    return[db, ppart, dbpath, DB]   
  
 
 def checkKscleanDB():                                   #  Verify Kscleaner database
@@ -325,6 +337,7 @@ def checkKscleanDB():                                   #  Verify Kscleaner data
 
         kgenlog ='KS Cleaner logging database check successful.  Addon started.'
         kgenlogUpdate(kgenlog)
+        getPythonVersion()
 
     except Exception as e:
         xbmc.log('KS Cleaner logging database check error.', xbmc.LOGERROR)

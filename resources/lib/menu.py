@@ -14,6 +14,7 @@ from resources.lib.music import displayMmusic
 from resources.lib.exports import selectExport
 from resources.lib.backup import selectBackups
 from resources.lib.vanalyze import vanalMenu
+from resources.lib.mutriggers import checkMuTriggers
 import mysql.connector
 
 from datetime import datetime
@@ -177,5 +178,6 @@ def testdata():
 
 
 checkKscleanDB()                                                #  Check Kscleaner logging database
+checkMuTriggers()                                               #  Check music database triggers
 displayMenu()                                                   #  Display main menu
 

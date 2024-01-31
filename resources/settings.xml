@@ -62,7 +62,23 @@
 					<default>false</default>
 					<control type="toggle"/>
 				</setting>
-
+				<setting id="trgverify" type="string" label="30382" help="30606">
+					<level>0</level>
+					<default>off</default>
+					<constraints>
+						<options>
+							<option label="30383">off</option>
+							<option label="30384">on</option>
+							<option label="30385">notify</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
+				<setting id="cleanall" type="boolean" label="30381" help="30605">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
 			</group>
 		</category>
 	</section>
