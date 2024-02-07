@@ -37,13 +37,21 @@
 - Added path table to video DB analyzer / cleaner
 1.0.3 10/21/2023
 - Added support for Kodi 21 Omega Alpha3 and higher
-1.0.4
+1.0.4 1/10/2024
 - Added detection for Python version
 - Added file copy database backups for Python 3.6 and below
 - Added single click clean all tables option 
-- Updated video database to align to Kodi change with Kodi 21 beta 2
-- Aded option to check and replace missing music database triggers for Local
+- Updated video database to align to Kodi change with Kodi 21 beta 2 (database 124)
+- Added option to check and replace missing music database triggers for Local
   databases and detection for MySQL with the standard Kodi database naming 
+1.0.5 
+- Fixed advancedsettings.xml parsing errors for space characters
+- Significantly improved advancedsettings.xml parsing to provide specific error details
+- Improved messaging for not supporting MySQL backups
+- Added support to allow local database backups with mixed MySQL and Local databases
+- Improved Kodi profile support vs. only the master profile
+
+  
 
  
  

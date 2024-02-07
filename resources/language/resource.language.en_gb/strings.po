@@ -376,6 +376,50 @@ msgctxt "#30389"
 msgid "Do you want KS Cleaner to repair the missing trigger ?"
 msgstr ""
 
+msgctxt "#30390"
+msgid "MySQL database backups are not supported and should leverage normal MySQL backup solutions."
+msgstr ""
+
+msgctxt "#30391"
+msgid "The advancedsettings.xml video database host value is invalid."
+msgstr ""
+
+msgctxt "#30392"
+msgid "The advancedsettings.xml video database port value is invalid."
+msgstr ""
+
+msgctxt "#30393"
+msgid "The advancedsettings.xml video database user value is invalid."
+msgstr ""
+
+msgctxt "#30394"
+msgid "The advancedsettings.xml video database password value is invalid."
+msgstr ""
+
+msgctxt "#30395"
+msgid "The advancedsettings.xml video database type value is not mysql."
+msgstr ""
+
+msgctxt "#30396"
+msgid "The advancedsettings.xml music database host value is invalid."
+msgstr ""
+
+msgctxt "#30397"
+msgid "The advancedsettings.xml music database port value is invalid."
+msgstr ""
+
+msgctxt "#30398"
+msgid "The advancedsettings.xml music database user value is invalid."
+msgstr ""
+
+msgctxt "#30399"
+msgid "The advancedsettings.xml music database password value is invalid."
+msgstr ""
+
+msgctxt "#30400"
+msgid "The advancedsettings.xml music database type value is not mysql."
+msgstr ""
+
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
 msgstr ""
