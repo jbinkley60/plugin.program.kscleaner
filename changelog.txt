@@ -50,6 +50,7 @@
 - Improved messaging for not supporting MySQL backups
 - Added support to allow local database backups with mixed MySQL and Local databases
 - Improved Kodi profile support vs. only the master profile
+- Added uniqueid table to CSV export and video database analyzer
 
   
 
