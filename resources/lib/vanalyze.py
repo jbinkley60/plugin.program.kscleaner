@@ -38,9 +38,10 @@ def vanalMenu(dbtype):                                     # Select table to exp
             menuitem14 = translate(30360)		   # seasons table
             menuitem15 = translate(30361)		   # tag_link table
             menuitem16 = translate(30379)		   # path table
+            menuitem17 = translate(30401)		   # uniqueid table
             selectbl = [menuitem1, menuitem2, menuitem3, menuitem4, menuitem5,  menuitem6,   \
             menuitem13, menuitem7, menuitem8, menuitem16, menuitem14, menuitem9, menuitem10, \
-            menuitem15, menuitem11, menuitem12]
+            menuitem15, menuitem11, menuitem12, menuitem17]
             if settings('cleanall') == 'true':             # Add clean all option
                 selectbl.insert(0, menuitem0)
             ddialog = xbmcgui.Dialog()    
@@ -59,7 +60,7 @@ def vanalMenu(dbtype):                                     # Select table to exp
 def vanalfMenu(vtable, dbtype):                            # Select analyzer function 
 
     try:
-        xbmc.log('Kodi selective cleaner analyzer selection is: ' + vtable, xbmc.LOGDEBUG)
+        xbmc.log('Kodi selective cleaner analyzer selection is: ' + vtable, xbmc.LOGINFO)
         sfunction = []
         menuitem1 = translate(30353)
         menuitem2 = translate(30354)
@@ -1437,6 +1438,74 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
             outdb.close()
             return orprecs
 
+
+        #==========================  Uniqueid Table analysis ===========================
+
+        if vtable == 'uniqueid':                       # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM uniqueid WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = 'episode' ")
+                elist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM uniqueid WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = 'movie' ")
+                mlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM uniqueid WHERE media_id not in      \
+                (SELECT idMVideo FROM musicvideo) and media_type = 'musicvideo' ")
+                vlist = kcursor.fetchall()
+                kcursor.close()
+            else: 
+                cure = kodidb.execute('SELECT * FROM uniqueid WHERE media_id not in      \
+                (SELECT idEpisode FROM episode) and media_type = "episode" ') 
+                curm = kodidb.execute('SELECT * FROM uniqueid WHERE media_id not in      \
+                (SELECT idMovie FROM movie) and media_type = "movie" ')
+                curv = kodidb.execute('SELECT * FROM uniqueid WHERE media_id not in      \
+                (SELECT idMVideo FROM musicvideo) and media_type = "musicvideo" ') 
+                elist = cure.fetchall()
+                mlist = curm.fetchall()
+                vlist = curv.fetchall()
+                del cure, curm, curv
+            kodidb.close()
+            orprecs = len(vlist) + len(mlist) + len(elist)
+            xbmc.log('Kodi selective cleaner analyzer: ' + str(len(elist)) + ' ' +        \
+            str(len(mlist)) + ' ' + str(len(vlist)), xbmc.LOGDEBUG)
+            if orprecs == 0:                              # No unmatched records found
+                outdb.close()
+                return 0
+            outdb.execute('CREATE TABLE vdb_temp(uniqueid INTEGER, media_id INTEGER, media_type TEXT, \
+            clean TEXT, comments TEXT)')
+            outdb.commit()
+
+            if len(elist) > 0:                            # Add episode unmatcheds
+                for a in range(len(elist)):
+                    acomment = '[COLOR blue]' +  "{:<36}".format('uniqueid table episode unmatched') +  \
+                    '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:22d}".format(int(elist[a][1])) +   \
+                    "{:<12}".format(' ') + "{:<16}".format(str(elist[a][2]))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(uniqueid, media_id, media_type, clean,  \
+                    comments) values (?, ?, ?, ?, ?)', (elist[a][0], elist[a][1], elist[a][2], 'Yes', acomment))
+                outdb.commit()
+                      
+            if len(mlist) > 0:                            # Add movie unmatcheds
+                for a in range(len(mlist)):
+                    acomment = '[COLOR blue]' +  "{:<36}".format('uniqueid table movie unmatched') +    \
+                    '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:22d}".format(int(mlist[a][1])) +   \
+                    "{:<12}".format(' ') + "{:<16}".format(str(mlist[a][2]))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(uniqueid, media_id, media_type, clean,  \
+                    comments) values (?, ?, ?, ?, ?)', (mlist[a][0], mlist[a][1], mlist[a][2], 'Yes', acomment))
+                outdb.commit()
+
+            if len(vlist) > 0:                            # Add musicvideos unmatcheds
+                for a in range(len(vlist)):
+                    acomment = '[COLOR blue]' +  "{:<36}".format('musicvideos table episode unmatched') +  \
+                    '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:22d}".format(int(vlist[a][1])) +   \
+                    "{:<12}".format(' ') + "{:<16}".format(str(vlist[a][2]))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(uniqueid, media_id, media_type, clean,  \
+                    comments) values (?, ?, ?, ?, ?)', (vlist[a][0], vlist[a][1], vlist[a][2], 'Yes', acomment))
+                outdb.commit()
+                      
+            outdb.close()
+            return orprecs
+
      
     except Exception as e:
         kodidb.close()
@@ -1516,6 +1585,9 @@ def getHeader(vtable):
         elif vtable == 'writer_link':
              vheader = "{:^48}".format('Table Comparison') +  "{:^15}".format('actor_id')         \
              + "{:^20}".format('media_id') + "{:<4}".format(' ') + "{:<16}".format('media_type')
+        elif vtable == 'uniqueid':
+             vheader = "{:^48}".format('Table Comparison') +  "{:^15}".format('uniqueid')         \
+             + "{:^20}".format('media_id') + "{:<4}".format(' ') + "{:<16}".format('media_type')
         else:
             return ''
         return vheader
@@ -1540,7 +1612,8 @@ def vdbClean(vtable, dbtype):                                  # Clean video dat
         if dbtype == 'mysql':
             kcursor = kodidb.cursor()
     
-        xbmc.log('KS Cleaner records to clean: ' + str(recscount), xbmc.LOGDEBUG)
+        xbmc.log('KS Cleaner record count to clean: ' + str(recscount) + ' ' + str(vtable), xbmc.LOGDEBUG)
+        xbmc.log('KS Cleaner records to clean: ' + str(cleanrecs), xbmc.LOGDEBUG)
 
         if vtable == 'actor':
             for clean in range(len(cleanrecs)):
@@ -1880,6 +1953,30 @@ def vdbClean(vtable, dbtype):                                  # Clean video dat
                    kodidb.execute('DELETE from writer_link WHERE actor_id = ? and media_id = ? and   \
                    media_type = ? ', (var1, var2, var3,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'actor_id ' + str(var1) + \
+                ' media_id ' + str(var2) + ' media_type ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No', cleandb)               
+            kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close() 
+            kodidb.close()
+            cleandb.commit()
+            cleandb.close()
+            return recscount
+
+        elif vtable == 'uniqueid':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql': 
+                    dquery = "DELETE from uniqueid WHERE uniqueid_id = %s and media_id = %s and   \
+                    media_type = %s "
+                    varquery = list([var1, var2, var3])   
+                    kcursor.execute(dquery, varquery)
+                else:   
+                   kodidb.execute('DELETE from uniqueid WHERE uniqueid_id = ? and media_id = ? and   \
+                   media_type = ? ', (var1, var2, var3,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'uniqueid ' + str(var1) + \
                 ' media_id ' + str(var2) + ' media_type ' + str(var3))
                 kgenlogUpdate(kgenlog, 'No', cleandb)               
             kodidb.commit()

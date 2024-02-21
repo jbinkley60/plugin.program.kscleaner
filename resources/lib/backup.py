@@ -21,9 +21,11 @@ def backupDB(selectdbs):                                         # Database back
     dbtype = settings('dbtype')
     mudbtype = settings('mudbtype')
     backtype = 'normal'
-    if dbtype == 'mysql' or mudbtype == 'mysql':
-        nofeature()
-        return
+    #if dbtype == 'mysql' or mudbtype == 'mysql':
+    #    kgenlog = translate(30390)
+    #    kgenlogUpdate(kgenlog)
+    #    xbmcgui.Dialog().ok(translate(30307), translate(30390))
+    #    return
 
     pyver = getPythonVersion()                                   # Determine backup type by Python version
     pyversion = pyver.split('.')
@@ -53,44 +55,54 @@ def backupDB(selectdbs):                                         # Database back
         folderpath = 'kodi/userdata/Database/kscleaner/'
 
         if 'video' in selectdbs:                                 # Video database backup
-            if backtype == 'file':
-                dbout = openKodiOutDB('video', 'yes')            # open output file copy mode
-                infile = os.path.join(xbmcvfs.translatePath("special://database"), getDatabaseName('local'))
-                shutil.copyfile(infile, dbout[3])
-                #xbmc.log("KS Cleaner fileinfo is: " +  infile + ' ' + str(dbout[3]), xbmc.LOGINFO)
+            if dbtype == 'mysql':
+                kgenlog = translate(30390)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30307), translate(30390))
             else:
-                dbout = openKodiOutDB('video')                   # open output
-                dbin = openKodiDB(dbtype)                        # open input
-                with dbout[0]:
-                    dbin.backup(dbout[0], pages=100)
-                dbout[0].close()
-                dbin.close()
-            dbscompleted += 1
-            checkBackups(dbout[2], 'MyVideos')                   # Limit number of backups
-            kgenlog ='Kodi Video DB backup successful: ' + dbout[1].split('/')[1]
-            kgenlogUpdate(kgenlog)
-            kscprogress.update(int(float(dbscompleted / dbslength) * 100), translate(30328))
-            xbmc.sleep(2000) 
+                if backtype == 'file':
+                    dbout = openKodiOutDB('video', 'yes')        # open output file copy mode
+                    infile = os.path.join(xbmcvfs.translatePath("special://database"), getDatabaseName('local'))
+                    shutil.copyfile(infile, dbout[3])
+                    #xbmc.log("KS Cleaner fileinfo is: " +  infile + ' ' + str(dbout[3]), xbmc.LOGINFO)
+                else:
+                    dbout = openKodiOutDB('video')               # open output
+                    dbin = openKodiDB(dbtype)                    # open input
+                    with dbout[0]:
+                        dbin.backup(dbout[0], pages=100)
+                    dbout[0].close()
+                    dbin.close()
+                dbscompleted += 1
+                checkBackups(dbout[2], 'MyVideos')               # Limit number of backups
+                kgenlog ='Kodi Video DB backup successful: ' + dbout[1].split('/')[1]
+                kgenlogUpdate(kgenlog)
+                kscprogress.update(int(float(dbscompleted / dbslength) * 100), translate(30328))
+                xbmc.sleep(2000) 
 
         if 'music' in selectdbs:                                 # Music database backup
-            if backtype == 'file':
-                dbout = openKodiOutDB('music', 'yes')            # open output file copy mode
-                infile = os.path.join(xbmcvfs.translatePath("special://database"), getmuDatabaseName('local'))
-                shutil.copyfile(infile, dbout[3])
-                #xbmc.log("KS Cleaner fileinfo is: " +  infile + ' ' + str(dbout[3]), xbmc.LOGINFO)
+            if mudbtype == 'mysql':
+                kgenlog = translate(30390)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30307), translate(30390))
             else:
-                dbout = openKodiOutDB('music')                   # open output
-                dbin = openKodiMuDB(mudbtype)                    # open input
-                with dbout[0]:
-                    dbin.backup(dbout[0], pages=100)
-                dbout[0].close()
-                dbin.close()
-            dbscompleted += 1
-            checkBackups(dbout[2], 'MyMusic')                    # Limit number of backups
-            kgenlog ='Kodi Music DB backup successful: ' + dbout[1].split('/')[1]
-            kgenlogUpdate(kgenlog)
-            kscprogress.update(int(float(dbscompleted / dbslength) * 100), translate(30329))
-            xbmc.sleep(2000) 
+                if backtype == 'file':
+                    dbout = openKodiOutDB('music', 'yes')        # open output file copy mode
+                    infile = os.path.join(xbmcvfs.translatePath("special://database"), getmuDatabaseName('local'))
+                    shutil.copyfile(infile, dbout[3])
+                    #xbmc.log("KS Cleaner fileinfo is: " +  infile + ' ' + str(dbout[3]), xbmc.LOGINFO)
+                else:
+                    dbout = openKodiOutDB('music')               # open output
+                    dbin = openKodiMuDB(mudbtype)                # open input
+                    with dbout[0]:
+                        dbin.backup(dbout[0], pages=100)
+                    dbout[0].close()
+                    dbin.close()
+                dbscompleted += 1
+                checkBackups(dbout[2], 'MyMusic')                # Limit number of backups
+                kgenlog ='Kodi Music DB backup successful: ' + dbout[1].split('/')[1]
+                kgenlogUpdate(kgenlog)
+                kscprogress.update(int(float(dbscompleted / dbslength) * 100), translate(30329))
+                xbmc.sleep(2000) 
 
         if 'texture' in selectdbs:                               # Textures database backup
             if backtype == 'file':
@@ -131,9 +143,11 @@ def selectBackups():                                           # Select database
 
     dbtype = settings('dbtype')
     mudbtype = settings('mudbtype')
-    if dbtype == 'mysql' or mudbtype == 'mysql':
-        nofeature()
-        return
+    #if dbtype == 'mysql' or mudbtype == 'mysql':
+    #    kgenlog = translate(30390)
+    #    kgenlogUpdate(kgenlog)
+    #    xbmcgui.Dialog().ok(translate(30307), translate(30390))
+    #    return
     try:
         while True:
 

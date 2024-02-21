@@ -52,10 +52,9 @@ def getDatabaseName(dbtype):
     elif installed_version == '20' and dbtype == 'mysql':
         return "121"
     elif installed_version == '21'  and dbtype == 'local':
-        return "MyVideos124.db"
+        return "MyVideos131.db"
     elif installed_version == '21' and dbtype == 'mysql':
-        return "124"
-
+        return "131"
        
     return "" 
 
@@ -94,16 +93,47 @@ def parseConfig(config_file, database, dbtype):
     try:
         #tree = ET.parse(config_file)
         with open(file=config_file, mode='r', encoding='utf-8-sig') as xml_txt:                 
-            tree = ET.fromstring((xml_txt.read().replace('&',' ').encode('utf-8')), ET.XMLParser(encoding='utf-8'))
+            tree = ET.fromstring((xml_txt.read().replace('&',' ').strip().encode('utf-8')), ET.XMLParser(encoding='utf-8'))
 
         if database == 'video':
             vconfig = tree.find('videodatabase')
-            type = vconfig.find('type').text
-            host = vconfig.find('host').text
-            port = vconfig.find('port').text
-            user = vconfig.find('user').text
-            passw = vconfig.find('pass').text
-            dbname = None
+            host = port = user = passw = type = ''
+            if vconfig.find('type') != None:
+                type = vconfig.find('type').text
+            if type == None or type.lower() != 'mysql':
+                kgenlog = translate(30395)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                return None
+            if vconfig.find('host') != None:
+                host = vconfig.find('host').text
+            if host == None or len(host) < 4:
+                kgenlog = translate(30391)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                return None
+            if vconfig.find('port') != None:
+                port = vconfig.find('port').text
+            if port == None or len(port) < 3:
+                kgenlog = translate(30392)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                return None
+            if vconfig.find('user') != None:
+                user = vconfig.find('user').text
+            if user == None or len(user) < 4:
+                kgenlog = translate(30393)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                return None                         
+            if vconfig.find('pass') != None:
+                passw = vconfig.find('pass').text
+            if passw == None or len(passw) < 4:
+                kgenlog = translate(30394)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                return None
+            dbname = None 
             if vconfig.find('name') != None:
                 dbname = vconfig.find('name').text
             dbver = getDatabaseName(dbtype)
@@ -126,15 +156,46 @@ def parseConfig(config_file, database, dbtype):
             return config
 
         elif database == 'music':
-            vconfig = tree.find('musicdatabase')
-            type = vconfig.find('type').text
-            host = vconfig.find('host').text
-            port = vconfig.find('port').text
-            user = vconfig.find('user').text
-            passw = vconfig.find('pass').text
-            dbname = None
-            if vconfig.find('name') != None:
-                dbname = vconfig.find('name').text
+            mconfig = tree.find('musicdatabase')
+            host = port = user = passw = type = ''
+            if mconfig.find('type') != None:
+                type = mconfig.find('type').text
+            if type == None or type.lower() != 'mysql':
+                kgenlog = translate(30400)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                return None
+            if mconfig.find('host') != None:
+                host = mconfig.find('host').text
+            if host == None or len(host) < 4:
+                kgenlog = translate(30396)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                return None
+            if mconfig.find('port') != None:
+                port = mconfig.find('port').text
+            if port == None or len(port) < 3:
+                kgenlog = translate(30397)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                return None
+            if mconfig.find('user') != None:
+                user = mconfig.find('user').text
+            if user == None or len(user) < 4:
+                kgenlog = translate(30398)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                return None                         
+            if mconfig.find('pass') != None:
+                passw = mconfig.find('pass').text
+            if passw == None or len(passw) < 4:
+                kgenlog = translate(30399)
+                kgenlogUpdate(kgenlog)
+                xbmcgui.Dialog().ok(translate(30308), kgenlog)
+                return None
+            dbname = None  
+            if mconfig.find('name') != None:
+                dbname = mconfig.find('name').text
             dbver = getmuDatabaseName(dbtype)
             if settings('dbmusname') != 'Default':
                 dbname = settings('dbmusname') 
@@ -159,6 +220,7 @@ def parseConfig(config_file, database, dbtype):
         kgenlog = "There is a problem with your MySQL configuration"
         kgenlogUpdate(kgenlog)
         xbmcgui.Dialog().ok(translate(30308), translate(30368))
+        return None
 
 
 def openKodiDB(dbtype):                               #  Open Kodi database
@@ -176,7 +238,7 @@ def openKodiDB(dbtype):                               #  Open Kodi database
 
     elif dbtype == 'mysql':
         try:
-            config_file = os.path.join(xbmcvfs.translatePath("special://userdata"), 'advancedsettings.xml')
+            config_file = os.path.join(xbmcvfs.translatePath("special://profile"), 'advancedsettings.xml')
             if not os.path.isfile(config_file):
                  kgenlog = "File not found: " + config_file
                  kgenlogUpdate(kgenlog)
@@ -185,6 +247,11 @@ def openKodiDB(dbtype):                               #  Open Kodi database
                  #kgenlog = "MySQL format selected.  Settings file found for Video database"
                  #kgenlogUpdate(kgenlog)
                  config = parseConfig(config_file, 'video', dbtype)
+                 if config == None:
+                    kgenlog = "There is a problem opening your MySQL video database. "
+                    kgenlogUpdate(kgenlog)
+                    xbmcgui.Dialog().ok(translate(30303), translate(30372))
+                    return                 
                  try:
                      db = mysql.connector.connect(**config)
                      return (db)
@@ -212,7 +279,6 @@ def openKodiDB(dbtype):                               #  Open Kodi database
             kgenlog = "There is a problem opening your MySQL video database. "
             kgenlogUpdate(kgenlog)
             xbmcgui.Dialog().ok(translate(30303), translate(30372))
-            sys.exit()
 
 
 def openKodiMuDB(dbtype):                           #  Open Kodi music database
@@ -230,7 +296,7 @@ def openKodiMuDB(dbtype):                           #  Open Kodi music database
 
     elif dbtype == 'mysql':
         try:
-            config_file = os.path.join(xbmcvfs.translatePath("special://userdata"), 'advancedsettings.xml')
+            config_file = os.path.join(xbmcvfs.translatePath("special://profile"), 'advancedsettings.xml')
             if not os.path.isfile(config_file):
                  kgenlog = "File not found: " + config_file
                  kgenlogUpdate(kgenlog)
@@ -239,6 +305,11 @@ def openKodiMuDB(dbtype):                           #  Open Kodi music database
                  #kgenlog = "MySQL format selected.  Settings file found  for Music database"
                  #kgenlogUpdate(kgenlog)
                  config = parseConfig(config_file, 'music', dbtype)
+                 if config == None:
+                    kgenlog = "There is a problem opening your MySQL music database."
+                    kgenlogUpdate(kgenlog)
+                    xbmcgui.Dialog().ok(translate(30308), translate(30373))
+                    return
                  try:
                      db = mysql.connector.connect(**config)
                      return (db)
@@ -266,7 +337,7 @@ def openKodiMuDB(dbtype):                           #  Open Kodi music database
             kgenlog = "There is a problem opening your MySQL music database."
             kgenlogUpdate(kgenlog)
             xbmcgui.Dialog().ok(translate(30308), translate(30373))
-            sys.exit()
+
 
 def openKodiTeDB():                                  #  Open Kodi textures database
     try:
