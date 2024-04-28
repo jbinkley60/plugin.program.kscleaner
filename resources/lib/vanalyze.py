@@ -132,6 +132,44 @@ def getCounts():                                        # Get clean and data err
         printexception()
 
 
+def getShowName(dbtype, shownumb, seasonnumb):              # Find season name when analyzing seasons
+
+    try:
+        kodidb = openKodiDB(dbtype)
+
+        xbmc.log('KSCleaner db info: ' + str(dbtype) + ' ' + str(kodidb), xbmc.LOGINFO)
+
+        if dbtype == 'mysql':
+            kcursor = kodidb.cursor()
+            msquery = "SELECT c00 FROM tvshow WHERE idshow = %s" 
+            varquery = list([shownumb])
+            kcursor.execute(msquery, varquery) 
+            slist = kcursor.fetchall()
+            kcursor.close()
+        else:   
+            curs = kodidb.execute('SELECT c00 FROM tvshow WHERE idShow = ?', (int(shownumb),)) 
+            slist = curs.fetchall()
+            del curs
+        kodidb.close()
+        
+        if len(slist) > 0:
+            showname = slist[0][0]
+            if len(showname) > 24: 
+                showname = showname[:24] + '... s' + str(seasonnumb)
+            else:
+                showname = showname + ' s' + str(seasonnumb)
+        else:
+            showname = 'TV Series name not found'
+
+        return showname
+
+    except Exception as e:
+        kodidb.close()
+        printexception()
+        kgenlog = ('KSCleaner problem getting Tv Show Name: ' + str(shownumb))
+        kgenlogUpdate(kgenlog, 'No')
+
+
 def cleanAll(selectbl, dbtype):                         # Clean all tables
 
     try:
@@ -1100,20 +1138,22 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(tlist) > 0:                            # Add tvshow unmatcheds
                 for a in range(len(tlist)):
-                    acomment = '[COLOR blue]' +  "{:<47}".format('seasons table tvshow unmatched') +        \
+                    showname = 'TV Series name not found'
+                    acomment = '[COLOR blue]' +  "{:<40}".format('seasons table tvshow unmatched') +        \
                     '[/COLOR]' + "{:10d}".format(int(tlist[a][0])) + "{:10d}".format(int(tlist[a][1])) +    \
-                    "{:<8}".format(' ') + "{:<16}".format(str(tlist[a][3]))
+                    "{:<8}".format(' ') + "{:<16}".format(showname)
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idSeason, idShow, name, clean, comments) \
                     values (?, ?, ?, ?, ?)', (tlist[a][0], tlist[a][1], tlist[a][3], 'Yes', acomment))
                 outdb.commit()
 
             if len(elist) > 0:                            # Add episode unmatcheds
-                for a in range(len(elist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('seasons table episode unmatched') +        \
+                for a in range(len(elist)):                   
+                    showname = getShowName(dbtype, elist[a][1], elist[a][2])
+                    acomment = '[COLOR blue]' +  "{:<40}".format('seasons table episode unmatched') +        \
                     '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:10d}".format(int(elist[a][1])) +     \
-                    "{:<8}".format(' ') + "{:<16}".format(str(elist[a][3]))
+                    "{:<8}".format(' ') + "{:<16}".format(showname)
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idSeason, idShow, name, clean, comments)  \
-                    values (?, ?, ?, ?, ?)', (elist[a][0], elist[a][1], elist[a][3], 'Yes', acomment))
+                    values (?, ?, ?, ?, ?)', (elist[a][0], elist[a][1], showname, 'Yes', acomment))
                 outdb.commit()                           
             outdb.close()
             return orprecs

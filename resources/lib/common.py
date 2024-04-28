@@ -52,9 +52,9 @@ def getDatabaseName(dbtype):
     elif installed_version == '20' and dbtype == 'mysql':
         return "121"
     elif installed_version == '21'  and dbtype == 'local':
-        return "MyVideos124.db"
+        return "MyVideos131.db"
     elif installed_version == '21' and dbtype == 'mysql':
-        return "124"
+        return "131"
        
     return "" 
 
@@ -409,6 +409,9 @@ def checkKscleanDB():                                   #  Verify Kscleaner data
         kgenlog ='KS Cleaner logging database check successful.  Addon started.'
         kgenlogUpdate(kgenlog)
         getPythonVersion()
+        installver = get_installedversion()
+        kgenlog ='KS Cleaner Kodi version detected: ' + installver
+        kgenlogUpdate(kgenlog)
 
     except Exception as e:
         xbmc.log('KS Cleaner logging database check error.', xbmc.LOGERROR)

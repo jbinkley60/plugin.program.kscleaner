@@ -424,6 +424,10 @@ msgctxt "#30401"
 msgid "uniqueid"
 msgstr ""
 
+msgctxt "#30402"
+msgid "Table not found in this version of Kodi."
+msgstr ""
+
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
 msgstr ""
