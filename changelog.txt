@@ -57,6 +57,7 @@
 - Changed cleaning seasons from displaying season name to associated TV Show names
 - Added videoversion and videoversiontype tables to CSV export
 - Added logging of Kodi version detected to KS Cleaner logger
+- Added videoversion table to the video database analyzer
 
   
 
