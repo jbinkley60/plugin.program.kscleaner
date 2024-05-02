@@ -58,6 +58,7 @@
 - Added videoversion and videoversiontype tables to CSV export
 - Added logging of Kodi version detected to KS Cleaner logger
 - Added videoversion table to the video database analyzer
+- Added repairing of missing music database triggers for SQL.  Previously only detection was supported.
 
   
 
