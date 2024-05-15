@@ -142,7 +142,7 @@ def parseConfig(config_file, database, dbtype):
             elif dbname != None:
                 dbname = dbname + dbver
             else:
-                dbname = 'myvideos' + dbver
+                dbname = 'MyVideos' + dbver
             xbmc.log('KS Cleaner parse:' + ' ' + type + ' ' + host + ' ' + port + ' ' + user + ' ' \
             + passw + ' ' + dbname , xbmc.LOGDEBUG)
             config = {
@@ -202,7 +202,7 @@ def parseConfig(config_file, database, dbtype):
             elif dbname != None:
                 dbname = dbname + dbver
             else:
-                dbname = 'mymusic' + dbver
+                dbname = 'MyMusic' + dbver
             xbmc.log('KS Cleaner parse:' + ' ' + type + ' ' + host + ' ' + port + ' ' + user + ' ' \
             + passw + ' ' + dbname , xbmc.LOGDEBUG)
             config = {

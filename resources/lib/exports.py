@@ -126,8 +126,8 @@ def selectExport():                                            # Select table to
             "Kodi Video DB - Streamdetails", "Kodi Video DB - Seasons", "Kodi Video DB - Episode View",          \
             "Kodi Video DB - Movie View",  "Kodi Video DB - actor_link", "Kodi Video DB - director_link",        \
             "Kodi Video DB - writer_link", "Kodi Video DB - uniqueid",  "Kodi Video DB - Music Video View",      \
-            "Kodi Video DB - Video Version", "Kodi Video DB - Video Version Type",                               \
-            "Kodi Music DB - Artist","Kodi Music DB - Album Artist View",                                        \
+            "Kodi Video DB - tag", "Kodi Video DB - tag_link", "Kodi Video DB - Video Version",                  \
+            "Kodi Video DB - Video Version Type", "Kodi Music DB - Artist","Kodi Music DB - Album Artist View",  \
             "Kodi Music DB - Album View ","Kodi Music DB - Artist View", "Kodi Music DB - Song",                 \
             "Kodi Music DB - Song Artist View","Kodi Music DB - Song View","Kodi Music DB - Path",               \
             "Textures DB - Path","Textures DB - Sizes","Textures DB - Texture"]
@@ -168,30 +168,34 @@ def selectExport():                                            # Select table to
             if 15 in stable:
                 selectbl.append('15musicvideo_view')
             if 16 in stable:
-                selectbl.append('16videoversion')
+                selectbl.append('16tag')
             if 17 in stable:
-                selectbl.append('17videoversiontype')
+                selectbl.append('17tag_link')
             if 18 in stable:
-                selectbl.append('21artist')
+                selectbl.append('18videoversion')
             if 19 in stable:
-                selectbl.append('22albumartistview')
+                selectbl.append('19videoversiontype')
             if 20 in stable:
-                selectbl.append('23albumview')
+                selectbl.append('21artist')
             if 21 in stable:
-                selectbl.append('24artistview')
+                selectbl.append('22albumartistview')
             if 22 in stable:
-                selectbl.append('25song')
+                selectbl.append('23albumview')
             if 23 in stable:
-                selectbl.append('26songartistview')
+                selectbl.append('24artistview')
             if 24 in stable:
-                selectbl.append('27songview')
+                selectbl.append('25song')
             if 25 in stable:
-                selectbl.append('28path')
+                selectbl.append('26songartistview')
             if 26 in stable:
-                selectbl.append('41path')
+                selectbl.append('27songview')
             if 27 in stable:
-                selectbl.append('42sizes')
+                selectbl.append('28path')
             if 28 in stable:
+                selectbl.append('41path')
+            if 29 in stable:
+                selectbl.append('42sizes')
+            if 30 in stable:
                 selectbl.append('43texture')
 
             exportData(selectbl)         

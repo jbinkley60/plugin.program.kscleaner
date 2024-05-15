@@ -49,7 +49,7 @@ def checkMuTriggers():                                              # Check Musi
                     for temp in tempmusic:
                         trmusic.append(temp[0])
 
-            xbmc.log('KS Cleaner trmusic:' + str(trmusic), xbmc.LOGINFO)
+            xbmc.log('KS Cleaner trmusic:' + str(trmusic), xbmc.LOGDEBUG)
 
             if len(trmusic) != len(triggers):                       # Check for all triggers
                 for trigger in triggers:
