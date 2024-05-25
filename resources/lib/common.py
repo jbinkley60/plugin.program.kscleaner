@@ -142,7 +142,7 @@ def parseConfig(config_file, database, dbtype):
             elif dbname != None:
                 dbname = dbname + dbver
             else:
-                dbname = 'myvideos' + dbver
+                dbname = 'MyVideos' + dbver
             xbmc.log('KS Cleaner parse:' + ' ' + type + ' ' + host + ' ' + port + ' ' + user + ' ' \
             + passw + ' ' + dbname , xbmc.LOGDEBUG)
             config = {
@@ -202,7 +202,7 @@ def parseConfig(config_file, database, dbtype):
             elif dbname != None:
                 dbname = dbname + dbver
             else:
-                dbname = 'mymusic' + dbver
+                dbname = 'MyMusic' + dbver
             xbmc.log('KS Cleaner parse:' + ' ' + type + ' ' + host + ' ' + port + ' ' + user + ' ' \
             + passw + ' ' + dbname , xbmc.LOGDEBUG)
             config = {
@@ -409,6 +409,9 @@ def checkKscleanDB():                                   #  Verify Kscleaner data
         kgenlog ='KS Cleaner logging database check successful.  Addon started.'
         kgenlogUpdate(kgenlog)
         getPythonVersion()
+        installver = get_installedversion()
+        kgenlog ='KS Cleaner Kodi version detected: ' + installver
+        kgenlogUpdate(kgenlog)
 
     except Exception as e:
         xbmc.log('KS Cleaner logging database check error.', xbmc.LOGERROR)

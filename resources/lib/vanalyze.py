@@ -7,6 +7,7 @@ import xbmcvfs
 import csv  
 from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate, nofeature
 from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, openKodiTeDB, tempDisplay, settings
+from resources.lib.common import get_installedversion
 from resources.lib.exports import exportData
 from datetime import datetime
 
@@ -39,9 +40,12 @@ def vanalMenu(dbtype):                                     # Select table to exp
             menuitem15 = translate(30361)		   # tag_link table
             menuitem16 = translate(30379)		   # path table
             menuitem17 = translate(30401)		   # uniqueid table
+            menuitem18 = translate(30403)		   # video versions table
             selectbl = [menuitem1, menuitem2, menuitem3, menuitem4, menuitem5,  menuitem6,   \
             menuitem13, menuitem7, menuitem8, menuitem16, menuitem14, menuitem9, menuitem10, \
             menuitem15, menuitem11, menuitem12, menuitem17]
+            if int(get_installedversion()) >= 21:
+                selectbl.append(menuitem18)                # Add video version table for Kodi 21+
             if settings('cleanall') == 'true':             # Add clean all option
                 selectbl.insert(0, menuitem0)
             ddialog = xbmcgui.Dialog()    
@@ -130,6 +134,44 @@ def getCounts():                                        # Get clean and data err
 
     except Exception as e:
         printexception()
+
+
+def getShowName(dbtype, shownumb, seasonnumb):              # Find season name when analyzing seasons
+
+    try:
+        kodidb = openKodiDB(dbtype)
+
+        xbmc.log('KSCleaner db info: ' + str(dbtype) + ' ' + str(kodidb), xbmc.LOGINFO)
+
+        if dbtype == 'mysql':
+            kcursor = kodidb.cursor()
+            msquery = "SELECT c00 FROM tvshow WHERE idshow = %s" 
+            varquery = list([shownumb])
+            kcursor.execute(msquery, varquery) 
+            slist = kcursor.fetchall()
+            kcursor.close()
+        else:   
+            curs = kodidb.execute('SELECT c00 FROM tvshow WHERE idShow = ?', (int(shownumb),)) 
+            slist = curs.fetchall()
+            del curs
+        kodidb.close()
+        
+        if len(slist) > 0:
+            showname = slist[0][0]
+            if len(showname) > 24: 
+                showname = showname[:24] + '... s' + str(seasonnumb)
+            else:
+                showname = showname + ' s' + str(seasonnumb)
+        else:
+            showname = 'TV Series name not found'
+
+        return showname
+
+    except Exception as e:
+        kodidb.close()
+        printexception()
+        kgenlog = ('KSCleaner problem getting Tv Show Name: ' + str(shownumb))
+        kgenlogUpdate(kgenlog, 'No')
 
 
 def cleanAll(selectbl, dbtype):                         # Clean all tables
@@ -1100,20 +1142,22 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(tlist) > 0:                            # Add tvshow unmatcheds
                 for a in range(len(tlist)):
-                    acomment = '[COLOR blue]' +  "{:<47}".format('seasons table tvshow unmatched') +        \
+                    showname = 'TV Series name not found'
+                    acomment = '[COLOR blue]' +  "{:<40}".format('seasons table tvshow unmatched') +        \
                     '[/COLOR]' + "{:10d}".format(int(tlist[a][0])) + "{:10d}".format(int(tlist[a][1])) +    \
-                    "{:<8}".format(' ') + "{:<16}".format(str(tlist[a][3]))
+                    "{:<8}".format(' ') + "{:<16}".format(showname)
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idSeason, idShow, name, clean, comments) \
                     values (?, ?, ?, ?, ?)', (tlist[a][0], tlist[a][1], tlist[a][3], 'Yes', acomment))
                 outdb.commit()
 
             if len(elist) > 0:                            # Add episode unmatcheds
-                for a in range(len(elist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('seasons table episode unmatched') +        \
+                for a in range(len(elist)):                   
+                    showname = getShowName(dbtype, elist[a][1], elist[a][2])
+                    acomment = '[COLOR blue]' +  "{:<40}".format('seasons table episode unmatched') +        \
                     '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:10d}".format(int(elist[a][1])) +     \
-                    "{:<8}".format(' ') + "{:<16}".format(str(elist[a][3]))
+                    "{:<8}".format(' ') + "{:<16}".format(showname)
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idSeason, idShow, name, clean, comments)  \
-                    values (?, ?, ?, ?, ?)', (elist[a][0], elist[a][1], elist[a][3], 'Yes', acomment))
+                    values (?, ?, ?, ?, ?)', (elist[a][0], elist[a][1], showname, 'Yes', acomment))
                 outdb.commit()                           
             outdb.close()
             return orprecs
@@ -1506,7 +1550,73 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
             outdb.close()
             return orprecs
 
-     
+
+        #==========================  Video version Table analysis ===========================
+
+        if vtable == 'videoversion':                       # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("SELECT * FROM videoversion WHERE idMedia not in      \
+                (SELECT idMovie FROM movie) and media_type = 'movie' ")
+                mlist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM videoversion WHERE idFile not in      \
+                (SELECT idFile FROM files) and media_type = 'movie' ")
+                flist = kcursor.fetchall()
+                kcursor.execute("SELECT * FROM videoversion WHERE idType not in      \
+                (SELECT id FROM videoversiontype) and media_type = 'movie' ")
+                vlist = kcursor.fetchall()
+            else: 
+                curm = kodidb.execute('SELECT * FROM videoversion WHERE idMedia not in   \
+                (SELECT idMovie FROM movie) and media_type = "movie" ') 
+                curf = kodidb.execute('SELECT * FROM videoversion WHERE idFile not in    \
+                (SELECT idFile FROM files) and media_type = "movie" ')
+                curv = kodidb.execute('SELECT * FROM videoversion WHERE idType not in    \
+                (SELECT id FROM videoversiontype) and media_type = "movie" ')
+                mlist = curm.fetchall()
+                flist = curf.fetchall()
+                vlist = curv.fetchall()
+                del curm, curf, curv
+            kodidb.close()
+            orprecs = len(mlist) + len(flist) + len(vlist)
+            xbmc.log('Kodi selective cleaner analyzer: ' + str(len(mlist)) + ' ' +        \
+            str(len(flist))  + ' ' + str(len(vlist)), xbmc.LOGDEBUG)
+            if orprecs == 0:                              # No unmatched records found
+                outdb.close()
+                return 0
+            outdb.execute('CREATE TABLE vdb_temp(idFile INTEGER, idMedia INTEGER, media_type TEXT, \
+            clean TEXT, comments TEXT)')
+            outdb.commit()
+                     
+            if len(mlist) > 0:                            # Add movie unmatcheds
+                for a in range(len(mlist)):
+                    acomment = '[COLOR blue]' +  "{:<34}".format('videoversion table movie unmatched') +    \
+                    '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:16d}".format(int(mlist[a][1])) +   \
+                    "{:<12}".format(' ') + "{:<16}".format(str(mlist[a][2]))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, idMedia, media_type, clean,     \
+                    comments) values (?, ?, ?, ?, ?)', (mlist[a][0], mlist[a][1], mlist[a][2], 'Yes', acomment))
+                outdb.commit()
+
+            if len(flist) > 0:                            # Add file unmatcheds
+                for a in range(len(flist)):
+                    acomment = '[COLOR blue]' +  "{:<37}".format('videoversion table file unmatched') +  \
+                    '[/COLOR]' + "{:10d}".format(int(flist[a][0])) + "{:16d}".format(int(flist[a][1])) +   \
+                    "{:<12}".format(' ') + "{:<16}".format(str(flist[a][2]))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, idMedia, media_type, clean,  \
+                    comments) values (?, ?, ?, ?, ?)', (flist[a][0], flist[a][1], flist[a][2], 'Yes', acomment))
+                outdb.commit()
+
+            if len(vlist) > 0:                            # Add Type unmatcheds
+                for a in range(len(vlist)):
+                    acomment = '[COLOR blue]' +  "{:<37}".format('videoversion table type unmatched') +  \
+                    '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:16d}".format(int(vlist[a][1])) +   \
+                    "{:<12}".format(' ') + "{:<16}".format(str(vlist[a][2]))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, idMedia, media_type, clean,  \
+                    comments) values (?, ?, ?, ?, ?)', (vlist[a][0], vlist[a][1], vlist[a][2], 'Yes', acomment))
+                outdb.commit()
+                      
+            outdb.close()
+            return orprecs
+    
     except Exception as e:
         kodidb.close()
         printexception()
@@ -1587,6 +1697,9 @@ def getHeader(vtable):
              + "{:^20}".format('media_id') + "{:<4}".format(' ') + "{:<16}".format('media_type')
         elif vtable == 'uniqueid':
              vheader = "{:^48}".format('Table Comparison') +  "{:^15}".format('uniqueid')         \
+             + "{:^20}".format('media_id') + "{:<4}".format(' ') + "{:<16}".format('media_type')
+        elif vtable == 'videoversion':
+             vheader = "{:^44}".format('Table Comparison') +  "{:^15}".format('idFile')           \
              + "{:^20}".format('media_id') + "{:<4}".format(' ') + "{:<16}".format('media_type')
         else:
             return ''
@@ -1978,6 +2091,30 @@ def vdbClean(vtable, dbtype):                                  # Clean video dat
                    media_type = ? ', (var1, var2, var3,))
                 kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'uniqueid ' + str(var1) + \
                 ' media_id ' + str(var2) + ' media_type ' + str(var3))
+                kgenlogUpdate(kgenlog, 'No', cleandb)               
+            kodidb.commit()
+            if dbtype == 'mysql':
+                kcursor.close() 
+            kodidb.close()
+            cleandb.commit()
+            cleandb.close()
+            return recscount
+
+        elif vtable == 'videoversion':
+            for clean in range(len(cleanrecs)):
+                var1 =  cleanrecs[clean][0]
+                var2 =  cleanrecs[clean][1]
+                var3 =  cleanrecs[clean][2]
+                if dbtype == 'mysql': 
+                    dquery = "DELETE from videoversion WHERE idFile = %s and idMedia = %s and   \
+                    media_type = %s "
+                    varquery = list([var1, var2, var3])   
+                    kcursor.execute(dquery, varquery)
+                else:   
+                   kodidb.execute('DELETE from videoversion WHERE idFile = ? and idMedia = ? and   \
+                   media_type = ? ', (var1, var2, var3,))
+                kgenlog = ('KS Cleaner cleaned ' +  vtable + ' - ' + 'idFile ' + str(var1) + \
+                ' idMedia ' + str(var2) + ' media_type ' + str(var3))
                 kgenlogUpdate(kgenlog, 'No', cleandb)               
             kodidb.commit()
             if dbtype == 'mysql':
