@@ -432,6 +432,18 @@ msgctxt "#30403"
 msgid "videoversion"
 msgstr ""
 
+msgctxt "#30404"
+msgid "Duplicate Media Analysis"
+msgstr ""
+
+msgctxt "#30405"
+msgid "All Video Media"
+msgstr ""
+
+msgctxt "#30406"
+msgid "Select "
+msgstr ""
+
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
 msgstr ""

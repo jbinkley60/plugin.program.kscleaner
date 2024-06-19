@@ -60,7 +60,10 @@
 - Added videoversion table to the video database analyzer
 - Added repairing of missing triggers for MySQL music databases.  Previously only detection was supported.
 - Added CSV export for video database tag and tag_link tables
-- Fixed MySQL default database names from all lower case to proper case
+- Fixed MySQL default database names from all lowercase to propercase
+1.0.7
+- Removed erroneous Kodi log message when analyzing / cleaning the seasons table
+
 
   
 

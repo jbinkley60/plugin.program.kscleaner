@@ -6,7 +6,7 @@ import xbmcaddon
 import xbmcvfs
 import csv  
 from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate, nofeature
-from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, openKodiTeDB, tempDisplay, settings
+from resources.lib.common import kgenlogUpdate, checkKscleanDB, openKodiTeDB, tempDisplay, settings
 from resources.lib.common import get_installedversion
 from resources.lib.exports import exportData
 from datetime import datetime
@@ -41,9 +41,10 @@ def vanalMenu(dbtype):                                     # Select table to exp
             menuitem16 = translate(30379)		   # path table
             menuitem17 = translate(30401)		   # uniqueid table
             menuitem18 = translate(30403)		   # video versions table
-            selectbl = [menuitem1, menuitem2, menuitem3, menuitem4, menuitem5,  menuitem6,   \
-            menuitem13, menuitem7, menuitem8, menuitem16, menuitem14, menuitem9, menuitem10, \
-            menuitem15, menuitem11, menuitem12, menuitem17]
+            menuitem19 = translate(30404)                  # Duplicate Media Analysis
+            selectbl = [menuitem19, menuitem1, menuitem2, menuitem3, menuitem4, menuitem5,   \
+            menuitem6, menuitem13, menuitem7, menuitem8, menuitem16, menuitem14, menuitem9,  \
+            menuitem10, menuitem15, menuitem11, menuitem12, menuitem17]
             if int(get_installedversion()) >= 21:
                 selectbl.append(menuitem18)                # Add video version table for Kodi 21+
             if settings('cleanall') == 'true':             # Add clean all option
@@ -53,7 +54,9 @@ def vanalMenu(dbtype):                                     # Select table to exp
             if stable < 0:                                 # User cancel
                 break
             elif selectbl[stable] == menuitem0:            # Analyze all tables
-                cleanAll(selectbl, dbtype) 
+                cleanAll(selectbl, dbtype)
+            elif selectbl[stable] == menuitem19:           # Duplicate Media Analysis
+                dupeCheck(dbtype) 
             else:
                 vanalfMenu(selectbl[stable], dbtype)
 
@@ -64,11 +67,11 @@ def vanalMenu(dbtype):                                     # Select table to exp
 def vanalfMenu(vtable, dbtype):                            # Select analyzer function 
 
     try:
-        xbmc.log('Kodi selective cleaner analyzer selection is: ' + vtable, xbmc.LOGINFO)
+        xbmc.log('Kodi selective cleaner analyzer selection is: ' + vtable, xbmc.LOGDEBUG)
         sfunction = []
-        menuitem1 = translate(30353)
-        menuitem2 = translate(30354)
-        menuitem3 = translate(30355)
+        menuitem1 = translate(30353)                       # Analyze Table
+        menuitem2 = translate(30354)                       # Analyze / CSV Export
+        menuitem3 = translate(30355)                       # Analyze / Clean Table
 
         selectfn = [menuitem1, menuitem2, menuitem3]
         ddialog = xbmcgui.Dialog()    
@@ -141,7 +144,7 @@ def getShowName(dbtype, shownumb, seasonnumb):              # Find season name w
     try:
         kodidb = openKodiDB(dbtype)
 
-        xbmc.log('KSCleaner db info: ' + str(dbtype) + ' ' + str(kodidb), xbmc.LOGINFO)
+        xbmc.log('KSCleaner showName db info: ' + str(dbtype), xbmc.LOGDEBUG)
 
         if dbtype == 'mysql':
             kcursor = kodidb.cursor()
@@ -170,7 +173,7 @@ def getShowName(dbtype, shownumb, seasonnumb):              # Find season name w
     except Exception as e:
         kodidb.close()
         printexception()
-        kgenlog = ('KSCleaner problem getting Tv Show Name: ' + str(shownumb))
+        kgenlog = ('KSCleaner problem getting TV Show Name: ' + str(shownumb))
         kgenlogUpdate(kgenlog, 'No')
 
 
@@ -1712,7 +1715,7 @@ def getHeader(vtable):
 def vdbClean(vtable, dbtype):                                  # Clean video database
 
     try:
-        kodidb = openKodiDB(dbtype)
+
         cleandb = openKscleanDB()
         recscount = 0
 
@@ -2129,6 +2132,65 @@ def vdbClean(vtable, dbtype):                                  # Clean video dat
         kodidb.close()
 
 
+def dupeCheck(dbtype):                                     #  Duplicate media analyzer
 
 
+        while True:
+            stable = []
+            analyzelist = []
+            #menuitem0 = translate(30405)                   #  All Video Media
+            menuitem1 = translate(30300)                    #  Movies
+            menuitem2 = translate(30322)                    #  Episodes
+            menuitem3 = translate(30302)                    #  Music videos
+            selectbl = [menuitem1, menuitem2, menuitem3]
+            ddialog = xbmcgui.Dialog()    
+            stable = ddialog.multiselect(translate(30306) + ' - ' + translate(30406) + translate(30404), selectbl)
+            if stable == None:                              # User cancel
+                break
+            #elif selectbl[stable] == menuitem0:            # Analyze all tables
+            #    cleanAll(selectbl, dbtype)
+            if 0 in stable:
+                analyzelist.append(menuitem1)
+            if 1 in stable:
+                analyzelist.append(menuitem2)   
+            if 2 in stable:
+                analyzelist.append(menuitem3)
+            #xbmc.log('KSCleaner dupe analyzer selections: ' + str(analyzelist), xbmc.LOGINFO)
+
+            analyzeout = '  '                               #  Dupe analysis output string
+            kodidb = openKodiDB(dbtype)
+            for media in analyzelist:
+                #xbmc.log('KSCleaner loop string: ' + str(media), xbmc.LOGINFO) 
+                if media == menuitem1:                      # Analyze duplicate movies
+                    analyzeout = '[COLOR blue]Duplicate Movie Analysis by Title[/COLOR]\n'
+                    if dbtype == 'mysql':
+                        kcursor = kodidb.cursor()
+                        kcursor.execute("SELECT movie_view.c00, strPath, strFileName FROM movie_view \
+                        INNER JOIN(SELECT c00 FROM movie_view GROUP BY c00 HAVING COUNT(c00) >1)temp \
+                        ON movie_view.c00 = temp.c00 ORDER BY movie_view.c00")
+                        mtlist = kcursor.fetchall()
+                    else: 
+                        curm = kodidb.execute('SELECT movie_view.c00, strPath, strFileName FROM movie_view \
+                        INNER JOIN(SELECT c00 FROM movie_view GROUP BY c00 HAVING COUNT(c00) >1)temp \
+                        ON movie_view.c00 = temp.c00 ORDER BY movie_view.c00') 
+                        mtlist = curm.fetchall()
+                        del curm
+                    if len(mtlist) > 0:
+                        xbmc.log('KSCleaner dupe movie count: ' + str(len(mtlist)), xbmc.LOGINFO)
+                        for m in range(len(mtlist)):
+                             analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + mtlist[m][0]
+                             analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + mtlist[m][1]
+                             analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + mtlist[m][2] + '\n'
+                    else:
+                        analyzeout = analyzeout + '\n\nNo duplicate movies by title found.\n'
+                        xbmc.log('KSCleaner dupe movie count: ' + str(len(mtlist)), xbmc.LOGINFO)
+                else:
+                    analyzeout = '  '                           #  Dupe analysis output string                     
+
+            kodidb.close() 
+
+            msdialog = xbmcgui.Dialog()
+            headval = "{:^128}".format(translate(30404))        
+            msdialog.textviewer(headval, analyzeout)  
+                  
 
