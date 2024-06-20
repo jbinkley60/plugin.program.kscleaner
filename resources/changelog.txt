@@ -1,0 +1,72 @@
+0.0.1
+- Initial Matrix alpha release
+0.0.2
+- Some bug fixes including the album counts being incorrect
+- Completed initial menu drill downs for all media types
+0.0.3
+- Some bug fixes 
+- Added full CSV export capability
+- Added support for textures database
+0.0.4
+- Added selective database backups and backup limit setting
+0.0.5
+- Added database analyzer 
+0.0.6
+- Fixed data analyzer output formatting 
+- Added detection for missing databases
+- Added art table to the video database analyzer
+0.0.7
+- Continued improvements with data analyzer output formatting
+- All tables now available in video database analyzer
+- Improved checking for NULL fields
+0.0.8
+- Added column header information to video data analyzer output
+- Modified database backup file names to include both date and time
+- Added 3 more tables to the video DB analyzer genre_id, seasons and tag_link
+- CSV export now working for all video DB analyzer tables
+- Added clean indicator to both video DB analyzer display and CSV outputs
+0.0.9
+- Added Kodi video DB analyzer clean function to clean orphaned data
+1.0.0
+- Initial production release
+- Added MySQL support
+- Added strict abd normal file table analysis
+1.0.1
+- Fixed bug related to MySQL named music databases causing an exception error
+1.0.2 08/28/2023
+- Added path table to video DB analyzer / cleaner
+1.0.3 10/21/2023
+- Added support for Kodi 21 Omega Alpha3 and higher
+1.0.4 1/10/2024
+- Added detection for Python version
+- Added file copy database backups for Python 3.6 and below
+- Added single click clean all tables option 
+- Updated video database to align to Kodi change with Kodi 21 beta 2 (database 124)
+- Added option to check and replace missing music database triggers for Local
+  databases and detection for MySQL with the standard Kodi database naming 
+1.0.5 
+- Fixed advancedsettings.xml parsing errors for space characters
+- Significantly improved advancedsettings.xml parsing to provide specific error details
+- Improved messaging for not supporting MySQL backups
+- Added support to allow local database backups with mixed MySQL and Local databases
+- Improved Kodi profile support vs. only the master profile
+- Added uniqueid table to CSV export and video database analyzer
+- Bumped the video database number to 131 to support Kodi Omega 21 beta 3.  
+  Continue using version 1.0.4 if you are running Kodi 21 Omega beta 2
+1.0.6
+- Changed cleaning seasons from displaying season name to associated TV Show names
+- Added videoversion and videoversiontype tables to CSV export
+- Added logging of Kodi version detected to KS Cleaner logger
+- Added videoversion table to the video database analyzer
+- Added repairing of missing triggers for MySQL music databases.  Previously only detection was supported.
+- Added CSV export for video database tag and tag_link tables
+- Fixed MySQL default database names from all lowercase to propercase
+1.0.7
+- Removed erroneous Kodi log message when analyzing / cleaning the seasons table
+
+
+  
+
+ 
+ 
+

@@ -1,0 +1,489 @@
+# Kodi Media Center language file
+# Addon Name: Autostop
+# Addon id: plugin.program.kscleaner
+# Addon Provider: Jeff B.
+msgid ""
+msgstr ""
+"Project-Id-Version: XBMC Addons\n"
+"Report-Msgid-Bugs-To: jeff@thebinks.com\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Jeff B.\n"
+"Language-Team: English"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_GB\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30300"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30301"
+msgid "TV Shows"
+msgstr ""
+
+msgctxt "#30302"
+msgid "Music Videos"
+msgstr ""
+
+msgctxt "#30303"
+msgid "Music"
+msgstr ""
+
+msgctxt "#30304"
+msgid "View Logs"
+msgstr ""
+
+msgctxt "#30305"
+msgid "Database Backup"
+msgstr ""
+
+msgctxt "#30306"
+msgid "Kodi Selective Cleaner"
+msgstr ""
+
+msgctxt "#30307"
+msgid "Feature not available yet"
+msgstr ""
+
+msgctxt "#30308"
+msgid "Kodi Selective Cleaner Error"
+msgstr ""
+
+msgctxt "#30309"
+msgid "Error connecting to the Kodi databases."
+msgstr ""
+
+msgctxt "#30310"
+msgid "See Kodi.log file for details."
+msgstr ""
+
+msgctxt "#30311"
+msgid "No Kodi Selective Cleaner logs found."
+msgstr ""
+
+msgctxt "#30312"
+msgid "No Kodi Selective Cleaner logs found for the selected date."
+msgstr ""
+
+msgctxt "#30313"
+msgid "Kodi Selective Cleaner Most Recent Logs"
+msgstr ""
+
+msgctxt "#30314"
+msgid "Select KS Cleaner Logs Date"
+msgstr ""
+
+msgctxt "#30315"
+msgid "KS Cleaner Logs for:  "
+msgstr ""
+
+msgctxt "#30316"
+msgid "Kodi Selective Cleaner Log Message"
+msgstr ""
+
+msgctxt "#30317"
+msgid "Export to CSV file"
+msgstr ""
+
+msgctxt "#30318"
+msgid "KS Cleaner database extract successful at: \n"
+msgstr ""
+
+msgctxt "#30319"
+msgid "KS Cleaner Database Export"
+msgstr ""
+
+msgctxt "#30320"
+msgid "KS Cleaner logs Database Export Error"
+msgstr ""
+
+msgctxt "#30321"
+msgid "Seasons"
+msgstr ""
+
+msgctxt "#30322"
+msgid "Episodes"
+msgstr ""
+
+msgctxt "#30323"
+msgid "Movies Grouping"
+msgstr ""
+
+msgctxt "#30324"
+msgid "Music Videos Grouping"
+msgstr ""
+
+msgctxt "#30325"
+msgid "Music Grouping"
+msgstr ""
+
+msgctxt "#30326"
+msgid "Albums"
+msgstr ""
+
+msgctxt "#30327"
+msgid "Items"
+msgstr ""
+
+msgctxt "#30328"
+msgid "Kodi Video Database"
+msgstr ""
+
+msgctxt "#30329"
+msgid "Kodi Music Database"
+msgstr ""
+
+msgctxt "#30330"
+msgid "Kodi Textures Database"
+msgstr ""
+
+msgctxt "#30331"
+msgid "Backup Selected Database(s)"
+msgstr ""
+
+msgctxt "#30332"
+msgid "Database Backup"
+msgstr ""
+
+msgctxt "#30333"
+msgid "Backup(s) Beginning"
+msgstr ""
+
+msgctxt "#30334"
+msgid "KS Cleaner Database Backup Error"
+msgstr ""
+
+msgctxt "#30335"
+msgid "KS Cleaner database backup(s) successful at: \n"
+msgstr ""
+
+msgctxt "#30336"
+msgid "Number of Database Backups"
+msgstr ""
+
+msgctxt "#30337"
+msgid "General"
+msgstr ""
+
+msgctxt "#30338"
+msgid "Video DB Data Analyzer"
+msgstr ""
+
+msgctxt "#30339"
+msgid "Music DB Data Analyzer"
+msgstr ""
+
+msgctxt "#30340"
+msgid "Select Table to Analyze"
+msgstr ""
+
+msgctxt "#30341"
+msgid "actor"
+msgstr ""
+
+msgctxt "#30342"
+msgid "actor_link"
+msgstr ""
+
+msgctxt "#30343"
+msgid "art"
+msgstr ""
+
+msgctxt "#30344"
+msgid "director_link"
+msgstr ""
+
+msgctxt "#30345"
+msgid "episode"
+msgstr ""
+
+msgctxt "#30346"
+msgid "files"
+msgstr ""
+
+msgctxt "#30347"
+msgid "movie"
+msgstr ""
+
+msgctxt "#30348"
+msgid "musicvideo"
+msgstr ""
+
+msgctxt "#30349"
+msgid "sets"
+msgstr ""
+
+msgctxt "#30350"
+msgid "streamdetails"
+msgstr ""
+
+msgctxt "#30351"
+msgid "tvshow"
+msgstr ""
+
+msgctxt "#30352"
+msgid "writer_link"
+msgstr ""
+
+msgctxt "#30353"
+msgid "Analyze Table"
+msgstr ""
+
+msgctxt "#30354"
+msgid "Analyze / CSV Export"
+msgstr ""
+
+msgctxt "#30355"
+msgid "Analyze / Clean Table"
+msgstr ""
+
+msgctxt "#30356"
+msgid "Select Analyzer Function"
+msgstr ""
+
+msgctxt "#30357"
+msgid "Unmatched Data Analysis"
+msgstr ""
+
+msgctxt "#30358"
+msgid "No unmatched records found for: "
+msgstr ""
+
+msgctxt "#30359"
+msgid "genre_link"
+msgstr ""
+
+msgctxt "#30360"
+msgid "seasons"
+msgstr ""
+
+msgctxt "#30361"
+msgid "tag_link"
+msgstr ""
+
+msgctxt "#30362"
+msgid "Confirm cleaning of Kodi Video DB table.  This can only be undone by restoring your Video DB from a backup."
+msgstr ""
+
+msgctxt "#30363"
+msgid "Kodi Video DB table successfully cleaned: "
+msgstr ""
+
+msgctxt "#30364"
+msgid " records"
+msgstr ""
+
+msgctxt "#30365"
+msgid "Kodi Local"
+msgstr ""
+
+msgctxt "#30366"
+msgid "MySQL"
+msgstr ""
+
+msgctxt "#30367"
+msgid "Select Video Database Type"
+msgstr ""
+
+msgctxt "#30368"
+msgid "There is a problem with your MySQL configuration"
+msgstr ""
+
+msgctxt "#30369"
+msgid "Movie with idMovie: "
+msgstr ""
+
+msgctxt "#30370"
+msgid " has an invalid movie title."
+msgstr ""
+
+msgctxt "#30371"
+msgid "Select Music Database Type"
+msgstr ""
+
+msgctxt "#30372"
+msgid "There is a problem opening your MySQL video database."
+msgstr ""
+
+msgctxt "#30373"
+msgid "There is a problem opening your MySQL music database."
+msgstr ""
+
+msgctxt "#30374"
+msgid "File not found: advancedsettings.xml"
+msgstr ""
+
+msgctxt "#30375"
+msgid "files - strict checking"
+msgstr ""
+
+msgctxt "#30376"
+msgid "Video DB File Table Strict Cleaning"
+msgstr ""
+
+msgctxt "#30377"
+msgid "MySQL Video Database Name"
+msgstr ""
+
+msgctxt "#30378"
+msgid "MySQL Video Music Name"
+msgstr ""
+
+msgctxt "#30379"
+msgid "path"
+msgstr ""
+
+msgctxt "#30380"
+msgid "Clean All Tables"
+msgstr ""
+
+msgctxt "#30381"
+msgid "Clean All Tables Option"
+msgstr ""
+
+msgctxt "#30382"
+msgid "Verify Music DB Triggers"
+msgstr ""
+
+msgctxt "#30383"
+msgid "Off"
+msgstr ""
+
+msgctxt "#30384"
+msgid "On"
+msgstr ""
+
+msgctxt "#30385"
+msgid "Notify"
+msgstr ""
+
+msgctxt "#30386"
+msgid "Notify"
+msgstr ""
+
+msgctxt "#30387"
+msgid "Missing Music DB Trigger"
+msgstr ""
+
+msgctxt "#30388"
+msgid "MySQL music DB trigger repair not currently supported.  See logs for missing trigger."
+msgstr ""
+
+msgctxt "#30389"
+msgid "Do you want KS Cleaner to repair the missing trigger ?"
+msgstr ""
+
+msgctxt "#30390"
+msgid "MySQL database backups are not supported and should leverage normal MySQL backup solutions."
+msgstr ""
+
+msgctxt "#30391"
+msgid "The advancedsettings.xml video database host value is invalid."
+msgstr ""
+
+msgctxt "#30392"
+msgid "The advancedsettings.xml video database port value is invalid."
+msgstr ""
+
+msgctxt "#30393"
+msgid "The advancedsettings.xml video database user value is invalid."
+msgstr ""
+
+msgctxt "#30394"
+msgid "The advancedsettings.xml video database password value is invalid."
+msgstr ""
+
+msgctxt "#30395"
+msgid "The advancedsettings.xml video database type value is not mysql."
+msgstr ""
+
+msgctxt "#30396"
+msgid "The advancedsettings.xml music database host value is invalid."
+msgstr ""
+
+msgctxt "#30397"
+msgid "The advancedsettings.xml music database port value is invalid."
+msgstr ""
+
+msgctxt "#30398"
+msgid "The advancedsettings.xml music database user value is invalid."
+msgstr ""
+
+msgctxt "#30399"
+msgid "The advancedsettings.xml music database password value is invalid."
+msgstr ""
+
+msgctxt "#30400"
+msgid "The advancedsettings.xml music database type value is not mysql."
+msgstr ""
+
+msgctxt "#30401"
+msgid "uniqueid"
+msgstr ""
+
+msgctxt "#30402"
+msgid "Table not found in this version of Kodi."
+msgstr ""
+
+msgctxt "#30403"
+msgid "videoversion"
+msgstr ""
+
+msgctxt "#30404"
+msgid "Duplicate Media Analysis"
+msgstr ""
+
+msgctxt "#30405"
+msgid "GUI"
+msgstr ""
+
+msgctxt "#30406"
+msgid "Select "
+msgstr ""
+
+msgctxt "#30407"
+msgid "File"
+msgstr ""
+
+msgctxt "#30408"
+msgid "Both"
+msgstr ""
+
+msgctxt "#30409"
+msgid "KS Cleaner duplicate media analysis successful at: \n"
+msgstr ""
+
+msgctxt "#30600"
+msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
+msgstr ""
+
+msgctxt "#30601"
+msgid "Select the database type Kodi is using.  The default is Kodi local."
+msgstr ""
+
+msgctxt "#30602"
+msgid "Enable to enforce file table entries are matched to movies, music and music video table entries.  See KS CLeaner Wiki for more information.  The default is disabled."
+msgstr ""
+
+msgctxt "#30603"
+msgid "Enter a new value for your MySQL video DB name to override your advancedsettings.xml file name or default.  See the KS Cleaner Wiki for more details"
+msgstr ""
+
+msgctxt "#30604"
+msgid "Enter a new value for your MySQL music DB name to override your advancedsettings.xml file name or default.  See the KS Cleaner Wiki for more details"
+msgstr ""
+
+msgctxt "#30605"
+msgid "Enables an option to clean all tables from a single menu selection.  Default is disabled."
+msgstr ""
+
+msgctxt "#30606"
+msgid "Enables an option to verify and repair missing music database triggers.  On is automatic repair.  Notify provides a GUI notification.  Default is Off."
+msgstr ""
+
+msgctxt "#30607"
+msgid "Enables and select output format for duplicate media analysis.  Options are GUI, text file, both or off. Default is GUI."
+msgstr ""
