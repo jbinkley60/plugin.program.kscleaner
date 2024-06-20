@@ -1,7 +1,7 @@
 import xbmc
 import xbmcgui
 import xbmcplugin
-import os, sys, linecache, json
+import os, sys, linecache, json, io
 import xbmcaddon
 import xbmcvfs
 import csv  
@@ -42,11 +42,13 @@ def vanalMenu(dbtype):                                     # Select table to exp
             menuitem17 = translate(30401)		   # uniqueid table
             menuitem18 = translate(30403)		   # video versions table
             menuitem19 = translate(30404)                  # Duplicate Media Analysis
-            selectbl = [menuitem19, menuitem1, menuitem2, menuitem3, menuitem4, menuitem5,   \
+            selectbl = [menuitem1, menuitem2, menuitem3, menuitem4, menuitem5,   \
             menuitem6, menuitem13, menuitem7, menuitem8, menuitem16, menuitem14, menuitem9,  \
             menuitem10, menuitem15, menuitem11, menuitem12, menuitem17]
             if int(get_installedversion()) >= 21:
                 selectbl.append(menuitem18)                # Add video version table for Kodi 21+
+            if settings('dupeoutput') != 'off':            # Duplicate Media Analysis option
+                selectbl.insert(0, menuitem19)
             if settings('cleanall') == 'true':             # Add clean all option
                 selectbl.insert(0, menuitem0)
             ddialog = xbmcgui.Dialog()    
@@ -2138,7 +2140,7 @@ def dupeCheck(dbtype):                                     #  Duplicate media an
         while True:
             stable = []
             analyzelist = []
-            #menuitem0 = translate(30405)                   #  All Video Media
+            dupeoutput = settings('dupeoutput')             # Duplicate output format
             menuitem1 = translate(30300)                    #  Movies
             menuitem2 = translate(30322)                    #  Episodes
             menuitem3 = translate(30302)                    #  Music videos
@@ -2147,8 +2149,6 @@ def dupeCheck(dbtype):                                     #  Duplicate media an
             stable = ddialog.multiselect(translate(30306) + ' - ' + translate(30406) + translate(30404), selectbl)
             if stable == None:                              # User cancel
                 break
-            #elif selectbl[stable] == menuitem0:            # Analyze all tables
-            #    cleanAll(selectbl, dbtype)
             if 0 in stable:
                 analyzelist.append(menuitem1)
             if 1 in stable:
@@ -2157,7 +2157,7 @@ def dupeCheck(dbtype):                                     #  Duplicate media an
                 analyzelist.append(menuitem3)
             #xbmc.log('KSCleaner dupe analyzer selections: ' + str(analyzelist), xbmc.LOGINFO)
 
-            analyzeout = '  '                               #  Dupe analysis output string
+            analyzeout = ''                                 #  Dupe analysis output string
             kodidb = openKodiDB(dbtype)
             for media in analyzelist:
                 #xbmc.log('KSCleaner loop string: ' + str(media), xbmc.LOGINFO) 
@@ -2165,32 +2165,141 @@ def dupeCheck(dbtype):                                     #  Duplicate media an
                     analyzeout = '[COLOR blue]Duplicate Movie Analysis by Title[/COLOR]\n'
                     if dbtype == 'mysql':
                         kcursor = kodidb.cursor()
-                        kcursor.execute("SELECT movie_view.c00, strPath, strFileName FROM movie_view \
-                        INNER JOIN(SELECT c00 FROM movie_view GROUP BY c00 HAVING COUNT(c00) >1)temp \
+                        kcursor.execute("SELECT movie_view.c00, strPath, strFileName FROM movie_view  \
+                        INNER JOIN(SELECT c00 FROM movie_view GROUP BY c00 HAVING COUNT(c00) >1)temp  \
                         ON movie_view.c00 = temp.c00 ORDER BY movie_view.c00")
                         mtlist = kcursor.fetchall()
+                        kcursor.execute("SELECT movie_view.c00, strPath, movie_view.strFileName FROM  \
+                        movie_view INNER JOIN(SELECT strFileName FROM movie_view GROUP BY strFileName \
+                        HAVING COUNT(strFileName) >1)temp ON movie_view.strFileName =                 \
+                        temp.strFileName ORDER BY movie_view.strFileName")
+                        mflist = kcursor.fetchall()
                     else: 
-                        curm = kodidb.execute('SELECT movie_view.c00, strPath, strFileName FROM movie_view \
-                        INNER JOIN(SELECT c00 FROM movie_view GROUP BY c00 HAVING COUNT(c00) >1)temp \
-                        ON movie_view.c00 = temp.c00 ORDER BY movie_view.c00') 
-                        mtlist = curm.fetchall()
-                        del curm
+                        curmt = kodidb.execute('SELECT movie_view.c00, strPath, strFileName FROM      \
+                        movie_view INNER JOIN(SELECT c00 FROM movie_view GROUP BY c00 HAVING          \
+                        COUNT(c00) >1)temp ON movie_view.c00 = temp.c00 ORDER BY movie_view.c00') 
+                        mtlist = curmt.fetchall()
+                        curmf = kodidb.execute('SELECT movie_view.c00, strPath, movie_view.strFileName \
+                        FROM movie_view INNER JOIN(SELECT strFileName FROM movie_view GROUP BY         \
+                        strFileName HAVING COUNT(strFileName) >1)temp ON movie_view.strFileName =      \
+                        temp.strFileName ORDER BY movie_view.strFileName') 
+                        mflist = curmf.fetchall()
+                        del curmt, curmf
+
                     if len(mtlist) > 0:
-                        xbmc.log('KSCleaner dupe movie count: ' + str(len(mtlist)), xbmc.LOGINFO)
+                        xbmc.log('KSCleaner dupe movie title count: ' + str(len(mtlist)), xbmc.LOGINFO)
                         for m in range(len(mtlist)):
                              analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + mtlist[m][0]
                              analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + mtlist[m][1]
                              analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + mtlist[m][2] + '\n'
                     else:
-                        analyzeout = analyzeout + '\n\nNo duplicate movies by title found.\n'
-                        xbmc.log('KSCleaner dupe movie count: ' + str(len(mtlist)), xbmc.LOGINFO)
-                else:
-                    analyzeout = '  '                           #  Dupe analysis output string                     
+                        analyzeout = analyzeout + '\nNo duplicate movies by title found.\n'
+                        xbmc.log('KSCleaner dupe movie title count: ' + str(len(mtlist)), xbmc.LOGINFO)
+
+                    analyzeout = analyzeout + '\n[COLOR blue]Duplicate Movie Analysis by File[/COLOR]\n'
+                    if len(mflist) > 0:
+                        xbmc.log('KSCleaner dupe movie file count: ' + str(len(mflist)), xbmc.LOGINFO)
+                        for m in range(len(mflist)):
+                             analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + mflist[m][2]
+                             analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + mflist[m][1]
+                             analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + mflist[m][0] + '\n'
+                    else:
+                        analyzeout = analyzeout + '\nNo duplicate movies by file found.\n'
+                        xbmc.log('KSCleaner dupe movie file count: ' + str(len(mflist)), xbmc.LOGINFO)
+
+                if media == menuitem2:                      # Analyze duplicate episode videos
+                    analyzeout = analyzeout + '\n[COLOR blue]Duplicate TV Episodes Analysis by File[/COLOR]\n'
+                    if dbtype == 'mysql':
+                        kcursor = kodidb.cursor()
+                        kcursor.execute("SELECT episode_view.c00, strPath, episode_view.strFileName FROM  \
+                        episode_view INNER JOIN(SELECT strFileName FROM episode_view GROUP BY strFileName \
+                        HAVING COUNT(strFileName) >1)temp ON episode_view.strFileName =                   \
+                        temp.strFileName ORDER BY episode_view.strFileName")
+                        eflist = kcursor.fetchall()
+                    else: 
+                        curef = kodidb.execute('SELECT episode_view.c00, strPath, episode_view.strFileName \
+                        FROM episode_view INNER JOIN(SELECT strFileName FROM episode_view GROUP BY          \
+                        strFileName HAVING COUNT(strFileName) >1)temp ON episode_view.strFileName =         \
+                        temp.strFileName ORDER BY episode_view.strFileName') 
+                        eflist = curef.fetchall()
+                        del curef
+
+                    if len(eflist) > 0:
+                        xbmc.log('KSCleaner dupe TV episodes file count: ' + str(len(eflist)), xbmc.LOGINFO)
+                        for m in range(len(eflist)):
+                             analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + eflist[m][2]
+                             analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + eflist[m][1]
+                             analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + eflist[m][0] + '\n'
+                    else:
+                        analyzeout = analyzeout + '\nNo duplicate TV episodes by file found.\n'
+                        xbmc.log('KSCleaner dupe TV epiosdes file count: ' + str(len(eflist)), xbmc.LOGINFO)
+
+
+                if media == menuitem3:                      # Analyze duplicate music videos
+                    analyzeout = analyzeout + '\n[COLOR blue]Duplicate Music Videos Analysis by Title[/COLOR]\n'
+                    if dbtype == 'mysql':
+                        kcursor = kodidb.cursor()
+                        kcursor.execute("SELECT musicvideo_view.c00, strPath, strFileName FROM musicvideo_view  \
+                        INNER JOIN(SELECT c00 FROM musicvideo_view GROUP BY c00 HAVING COUNT(c00) >1)temp  \
+                        ON musicvideo_view.c00 = temp.c00 ORDER BY musicvideo_view.c00")
+                        mvtlist = kcursor.fetchall()
+                        kcursor.execute("SELECT musicvideo_view.c00, strPath, musicvideo_view.strFileName FROM  \
+                        musicvideo_view INNER JOIN(SELECT strFileName FROM musicvideo_view GROUP BY strFileName \
+                        HAVING COUNT(strFileName) >1)temp ON musicvideo_view.strFileName =                 \
+                        temp.strFileName ORDER BY musicvideo_view.strFileName")
+                        mvflist = kcursor.fetchall()
+                    else: 
+                        curmvt = kodidb.execute('SELECT musicvideo_view.c00, strPath, strFileName FROM      \
+                        musicvideo_view INNER JOIN(SELECT c00 FROM musicvideo_view GROUP BY c00 HAVING          \
+                        COUNT(c00) >1)temp ON musicvideo_view.c00 = temp.c00 ORDER BY musicvideo_view.c00') 
+                        mvtlist = curmvt.fetchall()
+                        curmvf = kodidb.execute('SELECT musicvideo_view.c00, strPath, musicvideo_view.strFileName \
+                        FROM musicvideo_view INNER JOIN(SELECT strFileName FROM musicvideo_view GROUP BY         \
+                        strFileName HAVING COUNT(strFileName) >1)temp ON musicvideo_view.strFileName =      \
+                        temp.strFileName ORDER BY musicvideo_view.strFileName') 
+                        mvflist = curmvf.fetchall()
+                        del curmvt, curmvf
+
+                    if len(mvtlist) > 0:
+                        xbmc.log('KSCleaner dupe music video title count: ' + str(len(mvtlist)), xbmc.LOGINFO)
+                        for m in range(len(mvtlist)):
+                             analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + mvtlist[m][0]
+                             analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + mvtlist[m][1]
+                             analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + mvtlist[m][2] + '\n'
+                    else:
+                        analyzeout = analyzeout + '\nNo duplicate music videos by title found.\n'
+                        xbmc.log('KSCleaner dupe music video title count: ' + str(len(mvtlist)), xbmc.LOGINFO)
+
+                    analyzeout = analyzeout + '\n[COLOR blue]Duplicate Music Videos Analysis by File[/COLOR]\n'
+                    if len(mvflist) > 0:
+                        xbmc.log('KSCleaner dupe music video file count: ' + str(len(mvflist)), xbmc.LOGINFO)
+                        for m in range(len(mflist)):
+                             analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + mvflist[m][2]
+                             analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + mvflist[m][1]
+                             analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + mvflist[m][0] + '\n'
+                    else:
+                        analyzeout = analyzeout + '\nNo duplicate music videos by file found.\n'
+                        xbmc.log('KSCleaner dupe music videos file count: ' + str(len(mvflist)), xbmc.LOGINFO)                    
 
             kodidb.close() 
 
-            msdialog = xbmcgui.Dialog()
-            headval = "{:^128}".format(translate(30404))        
-            msdialog.textviewer(headval, analyzeout)  
-                  
+            if  dupeoutput in ['file', 'both']:
+                folderpath = xbmcvfs.translatePath(os.path.join("special://home/", "output/"))
+                if not xbmcvfs.exists(folderpath):
+                    xbmcvfs.mkdir(folderpath)
+                    xbmc.log("Kodi Export Output folder not found: " +  str(folderpath), xbmc.LOGINFO)
+                fpart = datetime.now().strftime('%H%M%S')
+                outfile = folderpath + "kscleaner_dupe_analyzer_" + fpart + ".txt" 
+                with io.open(outfile,'w',encoding='utf8') as fileh:
+                    analyzetxt = analyzeout.replace('[COLOR blue]', '').replace('[/COLOR]   ', '\t')
+                    fileh.write(analyzetxt.replace('[/COLOR]  ', '\t').replace('[/COLOR]', ''))
+                fileh.close()
+
+                dialog_text = translate(30409) + '\n' + folderpath + '\nkscleaner_dupe_analyzer_' + fpart + '.txt'
+                xbmcgui.Dialog().ok(translate(30404), dialog_text)
+  
+            if dupeoutput in ['gui', 'both']:
+                msdialog = xbmcgui.Dialog()
+                headval = "{:^128}".format(translate(30404))        
+                msdialog.textviewer(headval, analyzeout)                  
 

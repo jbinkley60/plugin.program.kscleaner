@@ -79,6 +79,19 @@
 					<default>false</default>
 					<control type="toggle"/>
 				</setting>
+				<setting id="dupeoutput" type="string" label="30404" help="30607">
+					<level>0</level>
+					<default>gui</default>
+					<constraints>
+						<options>
+							<option label="30383">off</option>
+							<option label="30405">gui</option>
+							<option label="30407">file</option>
+							<option label="30408">both</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
 			</group>
 		</category>
 	</section>

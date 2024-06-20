@@ -437,11 +437,23 @@ msgid "Duplicate Media Analysis"
 msgstr ""
 
 msgctxt "#30405"
-msgid "All Video Media"
+msgid "GUI"
 msgstr ""
 
 msgctxt "#30406"
 msgid "Select "
+msgstr ""
+
+msgctxt "#30407"
+msgid "File"
+msgstr ""
+
+msgctxt "#30408"
+msgid "Both"
+msgstr ""
+
+msgctxt "#30409"
+msgid "KS Cleaner duplicate media analysis successful at: \n"
 msgstr ""
 
 msgctxt "#30600"
@@ -470,4 +482,8 @@ msgstr ""
 
 msgctxt "#30606"
 msgid "Enables an option to verify and repair missing music database triggers.  On is automatic repair.  Notify provides a GUI notification.  Default is Off."
+msgstr ""
+
+msgctxt "#30607"
+msgid "Enables and select output format for duplicate media analysis.  Options are GUI, text file, both or off. Default is GUI."
 msgstr ""
