@@ -433,7 +433,7 @@ msgid "videoversion"
 msgstr ""
 
 msgctxt "#30404"
-msgid "Duplicate Media Analysis"
+msgid "Duplicate Video Media Analysis"
 msgstr ""
 
 msgctxt "#30405"
@@ -454,6 +454,26 @@ msgstr ""
 
 msgctxt "#30409"
 msgid "KS Cleaner duplicate media analysis successful at: \n"
+msgstr ""
+
+msgctxt "#30410"
+msgid "Video DB"
+msgstr ""
+
+msgctxt "#30411"
+msgid "Music DB"
+msgstr ""
+
+msgctxt "#30412"
+msgid "Enhanced Duplicate Episode Analysis"
+msgstr ""
+
+msgctxt "#30413"
+msgid "Analyze All Tables Option"
+msgstr ""
+
+msgctxt "#30414"
+msgid "Analyze All Tables"
 msgstr ""
 
 msgctxt "#30600"
@@ -487,3 +507,10 @@ msgstr ""
 msgctxt "#30607"
 msgid "Enables and select output format for duplicate media analysis.  Options are GUI, text file, both or off. Default is GUI."
 msgstr ""
+
+msgctxt "#30608"
+msgid "Normal episode duplicate analysis compares the TV Show, Season and Episode.  Enhanced adds the epsiode first aired time.  This is to handle situatuions when multiple TV Shows do not have a unique TV Show name.  Default is disabled."
+msgstr ""
+
+msgctxt "#30609"
+msgid "Enables and select output format for video media analysis.  This will provide a menu option to analyze all video database tables without cleaning.  Options are GUI, text file, both or off. Default is GUI."

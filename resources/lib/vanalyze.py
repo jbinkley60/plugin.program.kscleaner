@@ -42,6 +42,7 @@ def vanalMenu(dbtype):                                     # Select table to exp
             menuitem17 = translate(30401)		   # uniqueid table
             menuitem18 = translate(30403)		   # video versions table
             menuitem19 = translate(30404)                  # Duplicate Media Analysis
+            menuitem20 = translate(30414)                  # Analyze All Analysis
             selectbl = [menuitem1, menuitem2, menuitem3, menuitem4, menuitem5,   \
             menuitem6, menuitem13, menuitem7, menuitem8, menuitem16, menuitem14, menuitem9,  \
             menuitem10, menuitem15, menuitem11, menuitem12, menuitem17]
@@ -51,6 +52,8 @@ def vanalMenu(dbtype):                                     # Select table to exp
                 selectbl.insert(0, menuitem19)
             if settings('cleanall') == 'true':             # Add clean all option
                 selectbl.insert(0, menuitem0)
+            if settings('analyzeall') != 'off':            # Analyze All Analysis option
+                selectbl.insert(0, menuitem20)
             ddialog = xbmcgui.Dialog()    
             stable = ddialog.select(translate(30306) + ' - ' + translate(30340), selectbl)
             if stable < 0:                                 # User cancel
@@ -58,7 +61,9 @@ def vanalMenu(dbtype):                                     # Select table to exp
             elif selectbl[stable] == menuitem0:            # Analyze all tables
                 cleanAll(selectbl, dbtype)
             elif selectbl[stable] == menuitem19:           # Duplicate Media Analysis
-                dupeCheck(dbtype) 
+                dupeCheck(dbtype)
+            elif selectbl[stable] == menuitem20:           # Analyze All Analysis
+                nofeature()  
             else:
                 vanalfMenu(selectbl[stable], dbtype)
 
@@ -2140,7 +2145,7 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
         while True:
             stable = []
             analyzelist = []
-            dupeoutput = settings('dupeoutput')             # Duplicate output format
+            dupeoutput = settings('dupeoutput')             #  Duplicate output format
             menuitem1 = translate(30300)                    #  Movies
             menuitem2 = translate(30322)                    #  Episodes
             menuitem3 = translate(30302)                    #  Music videos
@@ -2190,38 +2195,48 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
 
                     if len(mtlist) > 0:
                         for m in range(len(mtlist)):
-                             analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + mtlist[m][0]
-                             analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + mtlist[m][1]
-                             analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + mtlist[m][2] + '\n'
+                             analyzeout += '\n[COLOR blue]Title:[/COLOR]   ' + mtlist[m][0]
+                             analyzeout += '\n[COLOR blue]Path:[/COLOR]  ' + mtlist[m][1]
+                             analyzeout += '\n[COLOR blue]File:[/COLOR]   ' + mtlist[m][2] + '\n'
                     else:
-                        analyzeout = analyzeout + '\nNo duplicate movies by title found.\n'
+                        analyzeout += '\nNo duplicate movies by title found.\n'
                     kgenlog = 'KSCleaner dupe movie title count: ' + str(len(mtlist))
                     kgenlogUpdate(kgenlog, 'No')  
 
-                    analyzeout = analyzeout + '\n[COLOR blue]Duplicate Movie Analysis by File[/COLOR]\n'
+                    analyzeout += '\n[COLOR blue]Duplicate Movie Analysis by File[/COLOR]\n'
                     if len(mflist) > 0:
                         for m in range(len(mflist)):
-                             analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + mflist[m][2]
-                             analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + mflist[m][1]
-                             analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + mflist[m][0] + '\n'
+                             analyzeout += '\n[COLOR blue]File:[/COLOR]   ' + mflist[m][2]
+                             analyzeout += '\n[COLOR blue]Path:[/COLOR]  ' + mflist[m][1]
+                             analyzeout += '\n[COLOR blue]Title:[/COLOR]   ' + mflist[m][0] + '\n'
                     else:
-                        analyzeout = analyzeout + '\nNo duplicate movies by file found.\n'
+                        analyzeout += '\nNo duplicate movies by file found.\n'
                     kgenlog = 'KSCleaner dupe movie file count: ' + str(len(mflist))
                     kgenlogUpdate(kgenlog, 'No') 
 
                 if media == menuitem2:                      # Analyze duplicate episode videos
-                    analyzeout = analyzeout + '\n[COLOR blue]Duplicate TV Episodes Analysis by Show, Season and Episode[/COLOR]\n'
+                    analyzeout += '\n[COLOR blue]Duplicate TV Episodes Analysis by Show, Season and Episode[/COLOR]\n'
                     if dbtype == 'mysql':
                         kcursor = kodidb.cursor()
-                        kcursor.execute("SELECT c00, strTitle, c12, c13, strPath, COUNT(*) AS QTY FROM   \
-                        episode_view GROUP BY strTitle, c12,c13 HAVING COUNT(*)>1 ORDER BY strTitle,     \
-                        c12, c13")
+                        if settings('enhepdupe') == 'true':
+                            kcursor.execute("SELECT c00, strTitle, c12, c13, strPath, c05, COUNT(*) AS QTY \
+                            FROM episode_view GROUP BY strTitle, c12,c13, c05 HAVING COUNT(*)>1 ORDER BY   \
+                            strTitle, c12, c13")
+                        else:
+                            kcursor.execute("SELECT c00, strTitle, c12, c13, strPath, c05, COUNT(*) AS QTY \
+                            FROM episode_view GROUP BY strTitle, c12,c13 HAVING COUNT(*)>1 ORDER BY        \
+                            strTitle, c12, c13")
                         eslist = kcursor.fetchall()
                         kcursor.close()
-                    else: 
-                        cures = kodidb.execute('SELECT c00, strTitle, c12, c13, strPath, COUNT(*) AS QTY  \
-                        FROM episode_view GROUP BY strTitle, c12, c13 HAVING COUNT(*)>1 ORDER BY          \
-                        strTitle,c12, c13') 
+                    else:
+                        if settings('enhepdupe') == 'true':
+                            cures = kodidb.execute('SELECT c00, strTitle, c12, c13, strPath, c05, COUNT(*) AS \
+                            QTY FROM episode_view GROUP BY strTitle, c12, c13, c05 HAVING COUNT(*)>1 ORDER BY \
+                            strTitle,c12, c13') 
+                        else: 
+                            cures = kodidb.execute('SELECT c00, strTitle, c12, c13, strPath, c05, COUNT(*) AS \
+                            QTY FROM episode_view GROUP BY strTitle, c12, c13 HAVING COUNT(*)>1 ORDER BY      \
+                            strTitle,c12, c13') 
                         eslist = cures.fetchall()
                         del cures
                     xbmc.log('KSCleaner dupe TV epiosde length: ' + str(len(eslist)) + ' ' + str(eslist), xbmc.LOGDEBUG)
@@ -2232,8 +2247,8 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
                             var2 = eslist[e][3]
                             xbmc.log('KSCleaner dupe TV epiosde search: ' + var0 + ' ' + var1 + ' ' + var2, xbmc.LOGDEBUG)
                             if dbtype == 'mysql':
-                                epquery = "SELECT c00, c12, c13, strPath, strFileName, strTitle from      \
-                                episode_view where strTitle = %s and c12 = %s and c13 = %s "
+                                epquery = "SELECT c00, c12, c13, strPath, strFileName, strTitle, c05     \
+                                from episode_view where strTitle = %s and c12 = %s and c13 = %s "
                                 varquery = list([var0, var1, var2])
                                 kcursor = kodidb.cursor()                                
                                 kcursor.execute(epquery, varquery)
@@ -2241,51 +2256,56 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
                                 kcursor.close()
                             else:
                                 cureo = kodidb.execute('SELECT c00, c12, c13, strPath, strFileName,       \
-                                strTitle from episode_view where strTitle=? and c12=? and c13=?',         \
+                                strTitle, c05 from episode_view where strTitle=? and c12=? and c13=?',    \
                                 (var0, var1, var2,))
                                 eolist = cureo.fetchall()
 
                             xbmc.log('KSCleaner dupe TV epiosde data: ' + str(eolist), xbmc.LOGDEBUG)
                             for o in range(len(eolist)): 
-                                analyzeout = analyzeout + '\n[COLOR blue]' + "{:<9}".format('Show:') + '[/COLOR]' + eolist[o][5]
-                                analyzeout = analyzeout + '\n[COLOR blue]' + "{:<9}".format('Season:') + '[/COLOR]' + eolist[o][1]
-                                analyzeout = analyzeout + '\n[COLOR blue]' + "{:<9}".format('Episode:') + '[/COLOR]' + eolist[o][2]
-                                analyzeout = analyzeout + '\n[COLOR blue]' + "{:<9}".format('Path:') + '[/COLOR]' + eolist[o][3]
-                                analyzeout = analyzeout + '\n[COLOR blue]' + "{:<9}".format('File:') + '[/COLOR]' + eolist[o][4] + '\n'
+                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('Show:') + '[/COLOR]' + eolist[o][5]
+                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('Season:') + '[/COLOR]' + eolist[o][1]
+                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('Episode:') + '[/COLOR]' + eolist[o][2]
+                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('Aired:') + '[/COLOR]' + eolist[o][6]
+                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('Path:') + '[/COLOR]' + eolist[o][3]
+                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('File:') + '[/COLOR]' + eolist[o][4] + '\n'
                     else:
-                        analyzeout = analyzeout + '\nNo duplicate TV episodes by show, season and episode found.\n'
+                        analyzeout += '\nNo duplicate TV episodes by show, season and episode found.\n'
                     kgenlog = 'KSCleaner dupe TV episodes by show, season and episode count: ' + str(len(eslist))
                     kgenlogUpdate(kgenlog, 'No') 
 
-                    analyzeout = analyzeout + '\n[COLOR blue]Duplicate TV Episodes Analysis by File[/COLOR]\n'
+                    analyzeout += '\n[COLOR blue]Duplicate TV Episodes Analysis by File[/COLOR]\n'
                     if dbtype == 'mysql':
                         kcursor = kodidb.cursor()
-                        kcursor.execute("SELECT episode_view.c00, strPath, episode_view.strFileName FROM  \
-                        episode_view INNER JOIN(SELECT strFileName FROM episode_view GROUP BY strFileName \
-                        HAVING COUNT(strFileName) >1)temp ON episode_view.strFileName =                   \
-                        temp.strFileName ORDER BY episode_view.strFileName")
+                        kcursor.execute("SELECT episode_view.c00, strPath, episode_view.strFileName,      \
+                        strTitle, c12, c13, c05 FROM episode_view INNER JOIN(SELECT strFileName FROM      \
+                        episode_view GROUP BY strFileName HAVING COUNT(strFileName) >1)temp ON            \
+                        episode_view.strFileName = temp.strFileName ORDER BY episode_view.strFileName")
                         eflist = kcursor.fetchall()
                         kcursor.close()
                     else: 
-                        curef = kodidb.execute('SELECT episode_view.c00, strPath, episode_view.strFileName  \
-                        FROM episode_view INNER JOIN(SELECT strFileName FROM episode_view GROUP BY          \
-                        strFileName HAVING COUNT(strFileName) >1)temp ON episode_view.strFileName =         \
-                        temp.strFileName ORDER BY episode_view.strFileName') 
+                        curef = kodidb.execute('SELECT episode_view.c00, strPath, episode_view.strFileName,  \
+                        strTitle, c12, c13, c05 FROM episode_view INNER JOIN(SELECT strFileName              \
+                        FROM episode_view GROUP BY strFileName HAVING COUNT(strFileName) >1)temp ON          \
+                        episode_view.strFileName = temp.strFileName ORDER BY episode_view.strFileName') 
                         eflist = curef.fetchall()
                         del curef
 
                     if len(eflist) > 0:
                         for m in range(len(eflist)):
-                            analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + eflist[m][2]
-                            analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + eflist[m][1]
-                            analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + eflist[m][0] + '\n'
+                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('File:') + '[/COLOR]' + eflist[m][2]
+                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Path:') + '[/COLOR]' + eflist[m][1]
+                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Show:') + '[/COLOR]' + eflist[m][3]
+                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Season:') + '[/COLOR]' + eflist[m][4]
+                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Episode:') + '[/COLOR]' + eflist[m][5]
+                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Aired:') + '[/COLOR]' + eflist[m][6]
+                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Title:') + '[/COLOR]' + eflist[m][0] + '\n'
                     else:
-                        analyzeout = analyzeout + '\nNo duplicate TV episodes by file found.\n'
+                        analyzeout += '\nNo duplicate TV episodes by file found.\n'
                     kgenlog = 'KSCleaner dupe TV epiosdes file count: ' + str(len(eflist))
                     kgenlogUpdate(kgenlog, 'No') 
 
                 if media == menuitem3:                      # Analyze duplicate music videos
-                    analyzeout = analyzeout + '\n[COLOR blue]Duplicate Music Videos Analysis by Title[/COLOR]\n'
+                    analyzeout += '\n[COLOR blue]Duplicate Music Videos Analysis by Title[/COLOR]\n'
                     if dbtype == 'mysql':
                         kcursor = kodidb.cursor()
                         kcursor.execute("SELECT musicvideo_view.c00, strPath, strFileName FROM musicvideo_view  \
@@ -2312,22 +2332,22 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
 
                     if len(mvtlist) > 0:
                         for m in range(len(mvtlist)):
-                             analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + mvtlist[m][0]
-                             analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + mvtlist[m][1]
-                             analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + mvtlist[m][2] + '\n'
+                             analyzeout += '\n[COLOR blue]Title:[/COLOR]   ' + mvtlist[m][0]
+                             analyzeout += '\n[COLOR blue]Path:[/COLOR]  ' + mvtlist[m][1]
+                             analyzeout += '\n[COLOR blue]File:[/COLOR]   ' + mvtlist[m][2] + '\n'
                     else:
-                        analyzeout = analyzeout + '\nNo duplicate music videos by title found.\n'
+                        analyzeout += '\nNo duplicate music videos by title found.\n'
                     kgenlog = 'KSCleaner dupe music video title count: ' + str(len(mvtlist))
                     kgenlogUpdate(kgenlog, 'No') 
 
-                    analyzeout = analyzeout + '\n[COLOR blue]Duplicate Music Videos Analysis by File[/COLOR]\n'
+                    analyzeout += '\n[COLOR blue]Duplicate Music Videos Analysis by File[/COLOR]\n'
                     if len(mvflist) > 0:
                         for m in range(len(mflist)):
-                             analyzeout = analyzeout + '\n[COLOR blue]File:[/COLOR]   ' + mvflist[m][2]
-                             analyzeout = analyzeout + '\n[COLOR blue]Path:[/COLOR]  ' + mvflist[m][1]
-                             analyzeout = analyzeout + '\n[COLOR blue]Title:[/COLOR]   ' + mvflist[m][0] + '\n'
+                             analyzeout += '\n[COLOR blue]File:[/COLOR]   ' + mvflist[m][2]
+                             analyzeout += '\n[COLOR blue]Path:[/COLOR]  ' + mvflist[m][1]
+                             analyzeout += '\n[COLOR blue]Title:[/COLOR]   ' + mvflist[m][0] + '\n'
                     else:
-                        analyzeout = analyzeout + '\nNo duplicate music videos by file found.\n'
+                        analyzeout += '\nNo duplicate music videos by file found.\n'
                     kgenlog = 'KSCleaner dupe music videos file count: ' + str(len(mvflist))
                     kgenlogUpdate(kgenlog, 'No')                     
 

@@ -57,19 +57,19 @@
 						<heading>30378</heading>
 					</control>
 				</setting>
-				<setting id="strictfile" type="boolean" label="30376" help="30602">
+			</group>
+		</category>
+		<category id="videodatabase" label="30410" help="">
+			<group id="1">
+				<setting id="analyzeall" type="string" label="30413" help="30609">
 					<level>0</level>
-					<default>false</default>
-					<control type="toggle"/>
-				</setting>
-				<setting id="trgverify" type="string" label="30382" help="30606">
-					<level>0</level>
-					<default>off</default>
+					<default>gui</default>
 					<constraints>
 						<options>
 							<option label="30383">off</option>
-							<option label="30384">on</option>
-							<option label="30385">notify</option>
+							<option label="30405">gui</option>
+							<option label="30407">file</option>
+							<option label="30408">both</option>
 						</options>
 					</constraints>
 					<control type="spinner" format="string"/>
@@ -88,6 +88,32 @@
 							<option label="30405">gui</option>
 							<option label="30407">file</option>
 							<option label="30408">both</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
+				<setting id="strictfile" type="boolean" label="30376" help="30602">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="enhepdupe" type="boolean" label="30412" help="30608">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+			</group>
+		</category>
+		<category id="musicdatabase" label="30411" help="">
+			<group id="1">
+				<setting id="trgverify" type="string" label="30382" help="30606">
+					<level>0</level>
+					<default>off</default>
+					<constraints>
+						<options>
+							<option label="30383">off</option>
+							<option label="30384">on</option>
+							<option label="30385">notify</option>
 						</options>
 					</constraints>
 					<control type="spinner" format="string"/>
