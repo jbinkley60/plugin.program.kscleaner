@@ -476,6 +476,10 @@ msgctxt "#30414"
 msgid "Analyze All Tables"
 msgstr ""
 
+msgctxt "#30415"
+msgid "Retain Analysis Files"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
 msgstr ""
@@ -514,3 +518,6 @@ msgstr ""
 
 msgctxt "#30609"
 msgid "Enables and select output format for video media analysis.  This will provide a menu option to analyze all video database tables without cleaning.  Options are GUI, text file, both or off. Default is GUI."
+
+msgctxt "#30610"
+msgid "Enabled keeps all copies of analysis text files and CSV output files.  Disabled only keeps the copies during the current KS Clkeaner session and old files are deleted when the addon restarts.  Enabled is default."

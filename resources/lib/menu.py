@@ -5,7 +5,7 @@ import os
 import xbmcaddon
 import xbmcvfs
 from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
-from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, settings
+from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, settings, checkAnalysis
 from resources.lib.logs import displayGenLogs
 from resources.lib.tvshows import displayTvshows
 from resources.lib.movies import displayMovieMenu
@@ -178,6 +178,7 @@ def testdata():
 
 
 checkKscleanDB()                                                #  Check Kscleaner logging database
+checkAnalysis()                                                 #  Check old analysis files
 checkMuTriggers()                                               #  Check music database triggers
 displayMenu()                                                   #  Display main menu
 

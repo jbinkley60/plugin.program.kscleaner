@@ -9,6 +9,7 @@ from datetime import datetime
 import mysql.connector
 from mysql.connector import errorcode
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 
 def settings(setting, value = None):
@@ -477,6 +478,37 @@ def tempDisplay(vtable, vheader = '', counts = '', mode = ''):
         printexception()
 
 
+def checkAnalysis():                                       #  Check for old copies of analysis and CSV files
+
+    try:
+        keepold = settings('analretain')
+        if keepold == 'true':
+            return
+
+        folderpath = xbmcvfs.translatePath(os.path.join("special://home/", "output/"))
+        if not xbmcvfs.exists(folderpath):
+            kgenlog = 'Kodi Export Output folder not found: ' +  str(folderpath)
+            kgenlogUpdate(kgenlog, 'no')    
+            xbmcvfs.mkdir(folderpath)
+            kgenlog = 'Kodi Export Output folder created: ' +  str(folderpath)
+            kgenlogUpdate(kgenlog, 'no')
+
+        paths = sorted(Path(folderpath).iterdir(), key=os.path.getmtime)
+        removed = kept = 0
+        for p in range(len(paths)):
+            if 'kscleaner' in str(paths[p]):
+                os.remove(paths[p])
+                removed += 1
+            else:
+                kept += 1
+        kgenlog = 'KSCleaner old analysis files removed: ' + str(removed) + '  files skipped: ' + str(kept)
+        kgenlogUpdate(kgenlog, 'no')              
+
+    except Exception as e:
+        kgenlog = 'KS Cleaner check analysis error.'
+        kgenlogUpdate(kgenlog, 'no')
+        xbmc.log('KS Cleaner check analysis error.', xbmc.LOGERROR)
+        printexception()    
 
 
 def nofeature(note = ' '):
