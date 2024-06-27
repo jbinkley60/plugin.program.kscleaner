@@ -440,7 +440,7 @@ def kgenlogUpdate(kgenlog, kdlog = 'Yes', dbfile = None):  #  Add logs to DB
         xbmc.log('KS cleaner problem writing to general log DB: ' + str(e), xbmc.LOGERROR)
 
 
-def tempDisplay(vtable, vheader = '', counts = ''):
+def tempDisplay(vtable, vheader = '', counts = '', mode = ''):
 
     try:        
         tempdb = openKscleanDB()
@@ -455,19 +455,22 @@ def tempDisplay(vtable, vheader = '', counts = ''):
             textval1 = "{:>72}".format(translate(30357) + ' - ' + vtable ) + '\n'  
             textval1 = textval1 + '[COLOR blue]' + "{:>48}".format('Clean Count: ' + counts[1]) + '[/COLOR]'
             textval1 = textval1 + "{:>32}".format('Data Integrity Count: ' + counts[0]) + '\n\n' + vheader
-        textval1 = textval1 + '\n' 
+        textval1 += '\n'
 
         if mglogs:
             for a in range(len(mglogs)):                              # Display logs if exist   
                 mcomment = mglogs[a][0]
                 textval1 = textval1 + "\n" + mcomment
-            msdialog.textviewer(headval, textval1)                                     
+            if mode != 'analyze':                                     # Do not display results during analyze all
+                msdialog.textviewer(headval, textval1)                                     
         else:                                                         # No records found for date selected   
             perfdialog = xbmcgui.Dialog()
             dialog_text = translate(30312)        
             perfdialog.ok(translate(30308), dialog_text)     
         tempdb.close()
-        return
+        if mode == 'analyze':
+            textval1 += '\n\n' 
+        return textval1
 
     except Exception as e:
         xbmc.log('KS Cleaner logging database check error.', xbmc.LOGERROR)

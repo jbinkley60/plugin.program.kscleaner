@@ -58,12 +58,19 @@ def vanalMenu(dbtype):                                     # Select table to exp
             stable = ddialog.select(translate(30306) + ' - ' + translate(30340), selectbl)
             if stable < 0:                                 # User cancel
                 break
-            elif selectbl[stable] == menuitem0:            # Analyze all tables
+            elif selectbl[stable] == menuitem0:            # Clean all tables
+                if menuitem19 in selectbl: selectbl.remove(menuitem19)   # Remove Duplicate Media from list
+                if menuitem20 in selectbl: selectbl.remove(menuitem20)   # Remove Analyze All from list
+                if menuitem0 in selectbl: selectbl.remove(menuitem0)     # Remove Clena All from list
                 cleanAll(selectbl, dbtype)
             elif selectbl[stable] == menuitem19:           # Duplicate Media Analysis
                 dupeCheck(dbtype)
             elif selectbl[stable] == menuitem20:           # Analyze All Analysis
-                nofeature()  
+                if menuitem19 in selectbl: selectbl.remove(menuitem19)   # Remove Duplicate Media from list
+                if menuitem20 in selectbl: selectbl.remove(menuitem20)   # Remove Analyze All from list
+                if menuitem0 in selectbl: selectbl.remove(menuitem0)     # Remove Clena All from list
+                #nofeature()
+                analyzeAll(selectbl, dbtype)  
             else:
                 vanalfMenu(selectbl[stable], dbtype)
 
@@ -189,7 +196,7 @@ def cleanAll(selectbl, dbtype):                         # Clean all tables
     try:
         if checkClean('All Tables'):
             clncount = 0                                # Track records cleaned
-            del selectbl[0]                             # Build list of tables to clean
+            #del selectbl[0]                             # Build list of tables to clean
             kgenlog = 'User selected to clean all tables '
             kgenlogUpdate(kgenlog)
             msgdialogprogress = xbmcgui.DialogProgress()
@@ -219,6 +226,60 @@ def cleanAll(selectbl, dbtype):                         # Clean all tables
     except Exception as e:
         printexception()
 
+
+def analyzeAll(selectbl, dbtype):                       # Analyze all tables
+
+
+            analyzeall = settings('analyzeall')         # Analyze all output format
+            analyzeout = ''                             # Output display / file string
+            kgenlog = 'User selected to analyze all tables '
+            kgenlogUpdate(kgenlog)
+            msgdialogprogress = xbmcgui.DialogProgress()
+            dialogmsg = 'Begin analyzing ' + str(len(selectbl)) + ' tables'
+            dialoghead = translate(30306) + '- Analyze all tables'
+            msgdialogprogress.create(dialoghead, dialogmsg)
+            xbmc.sleep(1500)
+
+            for x in range(len(selectbl)):              # Analyze and clean all tables              
+                vtable = selectbl[x]
+                alrecs = vdbAnalysis(vtable, dbtype)        
+                if alrecs != None and alrecs == 0:      # Table was clean
+                    kgenlog = 'Table analysis was clean: ' + selectbl[x]
+                    kgenlogUpdate(kgenlog, 'No')
+                    analyzeout += 'Table analysis was clean: ' + selectbl[x] + '\n\n'                    
+                else:
+                    ccount = getCounts()                #  Gets counts for output table vheader
+                    vheader = getHeader(vtable)
+                    tempdisplay = tempDisplay(vtable, vheader, ccount, 'analyze')
+                    analyzeout += tempdisplay
+                    kgenlog = 'Table records analysis: ' + str(ccount) + ' ' +  selectbl[x]
+                    kgenlogUpdate(kgenlog, 'No')
+                tprogress = int(((x + 1) / float(len(selectbl))) * 100)
+                ddialogmsg = str(x + 1) + ' tables analyzed - ' + selectbl[x]
+                msgdialogprogress.update(tprogress, ddialogmsg)
+                xbmc.sleep(1000)
+            msgdialogprogress.close()
+
+            if  analyzeall in ['file', 'both']:
+                folderpath = xbmcvfs.translatePath(os.path.join("special://home/", "output/"))
+                if not xbmcvfs.exists(folderpath):
+                    xbmcvfs.mkdir(folderpath)
+                    xbmc.log("Kodi Export Output folder not found: " +  str(folderpath), xbmc.LOGINFO)
+                fpart = datetime.now().strftime('%H%M%S')
+                outfile = folderpath + "kscleaner_video_analyzer_" + fpart + ".txt" 
+                with io.open(outfile,'w',encoding='utf8') as fileh:
+                    analyzetxt = analyzeout.replace('[COLOR blue]', '').replace('[/COLOR]   ', '\t')
+                    fileh.write(analyzetxt.replace('[/COLOR]  ', '\t').replace('[/COLOR]', ''))
+                fileh.close()
+
+                dialog_text = translate(30414) + '\n' + folderpath + '\nkscleaner_video_analyzer_' + fpart + '.txt'
+                xbmcgui.Dialog().ok(translate(30404), dialog_text)
+
+            if analyzeall in ['gui', 'both']:
+                msdialog = xbmcgui.Dialog()
+                headval = "{:^128}".format(translate(30414))        
+                msdialog.textviewer(headval, analyzeout)                                    
+ 
 
 def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
@@ -1722,7 +1783,7 @@ def getHeader(vtable):
 def vdbClean(vtable, dbtype):                                  # Clean video database
 
     try:
-
+        kodidb = openKodiDB(dbtype)
         cleandb = openKscleanDB()
         recscount = 0
 
