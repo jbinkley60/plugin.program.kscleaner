@@ -2337,17 +2337,30 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
                     analyzeout += '\n[COLOR blue]Duplicate TV Episodes Analysis by File[/COLOR]\n'
                     if dbtype == 'mysql':
                         kcursor = kodidb.cursor()
-                        kcursor.execute("SELECT episode_view.c00, strPath, episode_view.strFileName,      \
-                        strTitle, c12, c13, c05 FROM episode_view INNER JOIN(SELECT strFileName FROM      \
-                        episode_view GROUP BY strFileName HAVING COUNT(strFileName) >1)temp ON            \
-                        episode_view.strFileName = temp.strFileName ORDER BY episode_view.strFileName")
+                        if settings('enhepdupe') == 'true':
+                            kcursor.execute("SELECT episode_view.c00, strPath, episode_view.strFileName,      \
+                            strTitle, c12, c13, c05 FROM episode_view INNER JOIN(SELECT strFileName FROM      \
+                            episode_view GROUP BY strFileName, c12, c13 HAVING COUNT(*) >1)temp ON            \
+                            episode_view.strFileName = temp.strFileName ORDER BY episode_view.strFileName")
+                        else:
+                            kcursor.execute("SELECT episode_view.c00, strPath, episode_view.strFileName,      \
+                            strTitle, c12, c13, c05 FROM episode_view INNER JOIN(SELECT strFileName FROM      \
+                            episode_view GROUP BY strFileName HAVING COUNT(strFileName) >1)temp ON            \
+                            episode_view.strFileName = temp.strFileName ORDER BY episode_view.strFileName")
                         eflist = kcursor.fetchall()
                         kcursor.close()
-                    else: 
-                        curef = kodidb.execute('SELECT episode_view.c00, strPath, episode_view.strFileName,  \
-                        strTitle, c12, c13, c05 FROM episode_view INNER JOIN(SELECT strFileName              \
-                        FROM episode_view GROUP BY strFileName HAVING COUNT(strFileName) >1)temp ON          \
-                        episode_view.strFileName = temp.strFileName ORDER BY episode_view.strFileName') 
+                    else:
+                        if settings('enhepdupe') == 'true':
+                            curef = kodidb.execute('SELECT episode_view.c00, strPath, episode_view.strFileName,  \
+                            strTitle, c12, c13, c05 FROM episode_view INNER JOIN(SELECT strFileName              \
+                            FROM episode_view GROUP BY strFileName, c12, c13 HAVING COUNT(*) >1)temp ON          \
+                            episode_view.strFileName = temp.strFileName ORDER BY episode_view.strFileName') 
+
+                        else: 
+                            curef = kodidb.execute('SELECT episode_view.c00, strPath, episode_view.strFileName,  \
+                            strTitle, c12, c13, c05 FROM episode_view INNER JOIN(SELECT strFileName              \
+                            FROM episode_view GROUP BY strFileName HAVING COUNT(strFileName) >1)temp ON          \
+                            episode_view.strFileName = temp.strFileName ORDER BY episode_view.strFileName') 
                         eflist = curef.fetchall()
                         del curef
 
