@@ -8,13 +8,13 @@ and Music databases
 
 <b>Features:</b>
 - Kodi 19, 20 and 21 compatible.
-- Suppiort for both Kodi Local and MySQL databases
+- Support for both Kodi Local and MySQL databases
 - Individually select data  in the Kodi video and music databases
-- Database analyzer to find and delete orphaned data
-- Ability to multi-select records to delete.
-- Logging database to track all activities with Log Viewer
-- CSV export for Video, Music and Textures databases 
-- Selective Video, Music and Textures database backups
+- <a href="https://github.com/jbinkley60/plugin.program.kscleaner/wiki/Database-Analyzer">Database analyzer</a> to find and delete orphaned or mismatched data
+- <a href="https://github.com/jbinkley60/plugin.program.kscleaner/wiki/Database-Analyzer#duplicate-video-media-analysis">Duplicate Video Media Analysis</a> to find duplicate files and video content
+- Logging database to track all activities with <a href="https://github.com/jbinkley60/plugin.program.kscleaner/wiki/View-Logs">Log Viewer</a>
+- <a href="https://github.com/jbinkley60/plugin.program.kscleaner/wiki/Export-to-CSV-File">CSV export</a> for Video, Music and Textures databases 
+- Selective Video, Music and Textures <a href="https://github.com/jbinkley60/plugin.program.kscleaner/wiki/Database-Backup">database backups</a>
 
 
 <img src="resources/icon.png" width="40%">
