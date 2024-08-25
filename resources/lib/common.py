@@ -56,6 +56,8 @@ def getDatabaseName(dbtype):
         return "MyVideos131.db"
     elif installed_version == '21' and dbtype == 'mysql':
         return "131"
+    elif installed_version == '22'  and dbtype == 'local':
+        return "MyVideos133.db"
     elif installed_version == '22' and dbtype == 'mysql':
         return "133"
        
@@ -76,6 +78,8 @@ def getmuDatabaseName(dbtype):
         return "MyMusic83.db"
     elif installed_version == '21' and dbtype == 'mysql':
         return "83"
+    elif installed_version == '22'  and dbtype == 'local':
+        return "MyMusic83.db"
     elif installed_version == '22' and dbtype == 'mysql':
         return "83"         
     return ""  
