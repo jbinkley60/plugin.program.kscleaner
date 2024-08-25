@@ -63,6 +63,12 @@
 - Fixed MySQL default database names from all lowercase to propercase
 1.0.7
 - Removed erroneous Kodi log message when analyzing / cleaning the seasons table
+- Added Analyze All feature
+- Added Duplicate Video Analysis feature
+- Updated and organized addon settings tabs
+- Minor error condition logging improvements
+1.0.7a
+- Added support for Kodi 22 Piers interim development builds
 
 
   

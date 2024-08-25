@@ -151,6 +151,8 @@ def getCounts():                                        # Get clean and data err
 
     except Exception as e:
         printexception()
+        kgenlog = 'KSCleaner problem getting counts. '
+        kgenlogUpdate(kgenlog, 'No')
 
 
 def getShowName(dbtype, shownumb, seasonnumb):              # Find season name when analyzing seasons
@@ -187,7 +189,7 @@ def getShowName(dbtype, shownumb, seasonnumb):              # Find season name w
     except Exception as e:
         kodidb.close()
         printexception()
-        kgenlog = ('KSCleaner problem getting TV Show Name: ' + str(shownumb))
+        kgenlog = 'KSCleaner problem getting TV Show Name: ' + str(shownumb)
         kgenlogUpdate(kgenlog, 'No')
 
 
@@ -225,11 +227,14 @@ def cleanAll(selectbl, dbtype):                         # Clean all tables
 
     except Exception as e:
         printexception()
+        kgenlog = 'KSCleaner problem cleaning all video tables. '
+        kgenlogUpdate(kgenlog, 'No')
 
 
 def analyzeAll(selectbl, dbtype):                       # Analyze all tables
 
 
+    try:
             analyzeall = settings('analyzeall')         # Analyze all output format
             analyzeout = ''                             # Output display / file string
             kgenlog = 'User selected to analyze all tables '
@@ -239,6 +244,7 @@ def analyzeAll(selectbl, dbtype):                       # Analyze all tables
             dialoghead = translate(30306) + '- Analyze all tables'
             msgdialogprogress.create(dialoghead, dialogmsg)
             xbmc.sleep(1500)
+            cleanrecs = mismatch = 0
 
             for x in range(len(selectbl)):              # Analyze and clean all tables              
                 vtable = selectbl[x]
@@ -249,6 +255,8 @@ def analyzeAll(selectbl, dbtype):                       # Analyze all tables
                     analyzeout += 'Table analysis was clean: ' + selectbl[x] + '\n\n'                    
                 else:
                     ccount = getCounts()                #  Gets counts for output table vheader
+                    cleanrecs += int(ccount[1])
+                    mismatch += int(ccount[0])
                     vheader = getHeader(vtable)
                     tempdisplay = tempDisplay(vtable, vheader, ccount, 'analyze')
                     analyzeout += tempdisplay
@@ -257,8 +265,10 @@ def analyzeAll(selectbl, dbtype):                       # Analyze all tables
                 tprogress = int(((x + 1) / float(len(selectbl))) * 100)
                 ddialogmsg = str(x + 1) + ' tables analyzed - ' + selectbl[x]
                 msgdialogprogress.update(tprogress, ddialogmsg)
-                xbmc.sleep(1000)
+                xbmc.sleep(750)
             msgdialogprogress.close()
+            analyzeout += '\n\n[COLOR blue]Total Clean Count: ' + str(cleanrecs) 
+            analyzeout += '[/COLOR] \tTotal Data Integrity Count: ' + str(mismatch) + '\n\n'
 
             if  analyzeall in ['file', 'both']:
                 folderpath = xbmcvfs.translatePath(os.path.join("special://home/", "output/"))
@@ -278,7 +288,11 @@ def analyzeAll(selectbl, dbtype):                       # Analyze all tables
             if analyzeall in ['gui', 'both']:
                 msdialog = xbmcgui.Dialog()
                 headval = "{:^128}".format(translate(30414))        
-                msdialog.textviewer(headval, analyzeout)                                    
+                msdialog.textviewer(headval, analyzeout)
+    except Exception as e:
+        printexception()                                    
+        kgenlog = 'KSCleaner problem analyzing all video tables. '
+        kgenlogUpdate(kgenlog, 'No')
  
 
 def vdbAnalysis(vtable, dbtype):                        # Analyze table
