@@ -453,6 +453,7 @@ def kgenlogUpdate(kgenlog, kdlog = 'Yes', dbfile = None):  #  Add logs to DB
 def tempDisplay(vtable, vheader = '', counts = '', mode = ''):
 
     try:        
+        analcolor = "[COLOR " + settings('analcolor').lower() + "]" 
         tempdb = openKscleanDB()
         curr = tempdb.execute('SELECT comments FROM vdb_temp')
         mglogs = curr.fetchall()                                     # Get logs from database
@@ -463,7 +464,7 @@ def tempDisplay(vtable, vheader = '', counts = '', mode = ''):
         else:
             #textval1 = "{:^128}".format(translate(30357) + ' - ' + vtable )  + '\n\n' + vheader
             textval1 = "{:>72}".format(translate(30357) + ' - ' + vtable ) + '\n'  
-            textval1 = textval1 + '[COLOR blue]' + "{:>48}".format('Clean Count: ' + counts[1]) + '[/COLOR]'
+            textval1 = textval1 + analcolor + "{:>48}".format('Clean Count: ' + counts[1]) + '[/COLOR]'
             textval1 = textval1 + "{:>32}".format('Data Integrity Count: ' + counts[0]) + '\n\n' + vheader
         textval1 += '\n'
 
