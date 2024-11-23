@@ -237,6 +237,7 @@ def analyzeAll(selectbl, dbtype):                       # Analyze all tables
     try:
             analyzeall = settings('analyzeall')         # Analyze all output format
             analyzeout = ''                             # Output display / file string
+            analcolor = "[COLOR " + settings('analcolor').lower() + "]" 
             kgenlog = 'User selected to analyze all tables '
             kgenlogUpdate(kgenlog)
             msgdialogprogress = xbmcgui.DialogProgress()
@@ -267,7 +268,7 @@ def analyzeAll(selectbl, dbtype):                       # Analyze all tables
                 msgdialogprogress.update(tprogress, ddialogmsg)
                 xbmc.sleep(750)
             msgdialogprogress.close()
-            analyzeout += '\n\n[COLOR blue]Total Clean Count: ' + str(cleanrecs) 
+            analyzeout += '\n\n' + analcolor + 'Total Clean Count: ' + str(cleanrecs) 
             analyzeout += '[/COLOR] \tTotal Data Integrity Count: ' + str(mismatch) + '\n\n'
 
             if  analyzeall in ['file', 'both']:
@@ -278,7 +279,7 @@ def analyzeAll(selectbl, dbtype):                       # Analyze all tables
                 fpart = datetime.now().strftime('%H%M%S')
                 outfile = folderpath + "kscleaner_video_analyzer_" + fpart + ".txt" 
                 with io.open(outfile,'w',encoding='utf8') as fileh:
-                    analyzetxt = analyzeout.replace('[COLOR blue]', '').replace('[/COLOR]   ', '\t')
+                    analyzetxt = analyzeout.replace(analcolor, '').replace('[/COLOR]   ', '\t')
                     fileh.write(analyzetxt.replace('[/COLOR]  ', '\t').replace('[/COLOR]', ''))
                 fileh.close()
 
@@ -300,6 +301,8 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
     try:
         kodidb = openKodiDB(dbtype)
         outdb = openKscleanDB()
+
+        analcolor = "[COLOR " + settings('analcolor').lower() + "]" 
 
         outdb.execute('DROP table IF EXISTS vdb_temp')  # Drop temporary output table
         outdb.commit()
@@ -374,7 +377,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(alist) > 0:                            # Add actor unmatcheds
                 for a in range(len(alist)):
-                    acomment = '[COLOR blue]' + "{:<47}".format('actor_link table actor unmatched')       \
+                    acomment = analcolor + "{:<47}".format('actor_link table actor unmatched')            \
                     +  '[/COLOR]' + "{:10d}".format(int(alist[a][0])) + "{:10d}".format(int(alist[a][1])) \
                     +   "{:<8}".format(' ') + "{:<16}".format(str(alist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type,        \
@@ -384,7 +387,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
                       
             if len(mlist) > 0:                            # Add movie unmatcheds
                 for a in range(len(mlist)):
-                    acomment = '[COLOR blue]' + "{:<46}".format('actor_link table movie unmatched')       \
+                    acomment = analcolor + "{:<46}".format('actor_link table movie unmatched')       \
                     +  '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:10d}".format(int(mlist[a][1])) \
                     +   "{:<8}".format(' ') + "{:<16}".format(str(mlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type,        \
@@ -394,7 +397,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(elist) > 0:                            # Add episode unmatcheds
                 for a in range(len(elist)):
-                    acomment = '[COLOR blue]' + "{:<47}".format('actor_link table episode unmatched')     \
+                    acomment = analcolor + "{:<47}".format('actor_link table episode unmatched')     \
                     +  '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:10d}".format(int(elist[a][1])) \
                     +   "{:<8}".format(' ') + "{:<16}".format(str(elist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type,        \
@@ -404,7 +407,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(tlist) > 0:                            # Add tvshow unmatcheds
                 for a in range(len(tlist)):
-                    acomment = '[COLOR blue]' + "{:<46}".format('actor_link table tvshow unmatched')      \
+                    acomment = analcolor + "{:<46}".format('actor_link table tvshow unmatched')      \
                     +  '[/COLOR]' + "{:10d}".format(int(tlist[a][0])) + "{:10d}".format(int(tlist[a][1])) \
                     +   "{:<8}".format(' ') + "{:<16}".format(str(tlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type,        \
@@ -414,7 +417,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(vlist) > 0:                            # Add musicvideo unmatcheds
                 for a in range(len(vlist)):
-                    acomment = '[COLOR blue]' + "{:<42}".format('actor_link table musicvideo unmatched')  \
+                    acomment = analcolor + "{:<42}".format('actor_link table musicvideo unmatched')  \
                     +  '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:10d}".format(int(vlist[a][1])) \
                     +   "{:<8}".format(' ') + "{:<16}".format(str(vlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type,        \
@@ -424,7 +427,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(alist) > 0:                            # Add seasons unmatcheds
                 for a in range(len(alist)):
-                    acomment = '[COLOR blue]' + "{:<45}".format('actor_link table seasons unmatched')     \
+                    acomment = analcolor + "{:<45}".format('actor_link table seasons unmatched')     \
                     +  '[/COLOR]' + "{:10d}".format(int(alist[a][0])) + "{:10d}".format(int(alist[a][1])) \
                     +   "{:<8}".format(' ') + "{:<16}".format(str(alist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type,        \
@@ -483,7 +486,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(alist) > 0:                            # Add actor_link unmatcheds
                 for a in range(len(alist)):
-                    acomment = '[COLOR blue]' + "{:<32}".format('actor table actor_link missing') + \
+                    acomment = analcolor + "{:<32}".format('actor table actor_link missing') + \
                     '[/COLOR]' + "{:12d}".format(int(str(alist[a][0]))) + "{:<12}".format(' ') +    \
                      str(alist[a][1])
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, name, clean, comments)  \
@@ -550,7 +553,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(alist) > 0:                            # Add sets unmatcheds
                 for a in range(len(alist)):
-                    acomment = '[COLOR blue]' +  "{:<47}".format('art table sets unmatched') +              \
+                    acomment = analcolor +  "{:<47}".format('art table sets unmatched') +              \
                     '[/COLOR]' + "{:10d}".format(int(alist[a][0])) + "{:10d}".format(int(alist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(alist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
@@ -560,7 +563,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
                       
             if len(mlist) > 0:                            # Add movie unmatcheds
                 for a in range(len(mlist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('art table movie unmatched') +             \
+                    acomment = analcolor +  "{:<45}".format('art table movie unmatched') +             \
                     '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:10d}".format(int(mlist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(mlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
@@ -570,7 +573,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(elist) > 0:                            # Add episode unmatcheds
                 for a in range(len(elist)):
-                    acomment = '[COLOR blue]' +  "{:<44}".format('art table episode unmatched') +           \
+                    acomment = analcolor +  "{:<44}".format('art table episode unmatched') +           \
                     '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:10d}".format(int(elist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(elist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
@@ -580,7 +583,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(tlist) > 0:                            # Add tvshow unmatcheds
                 for a in range(len(tlist)):
-                    acomment = '[COLOR blue]' +  "{:<44}".format('art table tvshow unmatched') +            \
+                    acomment = analcolor +  "{:<44}".format('art table tvshow unmatched') +            \
                     '[/COLOR]' + "{:10d}".format(int(tlist[a][0])) + "{:10d}".format(int(tlist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(tlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
@@ -590,7 +593,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(vlist) > 0:                            # Add musicvideo unmatcheds
                 for a in range(len(vlist)):
-                    acomment = '[COLOR blue]' +  "{:<41}".format('art table musicvideo unmatched') +        \
+                    acomment = analcolor +  "{:<41}".format('art table musicvideo unmatched') +        \
                     '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:10d}".format(int(vlist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(vlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
@@ -600,7 +603,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(slist) > 0:                            # Add season unmatcheds
                 for a in range(len(slist)):
-                    acomment = '[COLOR blue]' +  "{:<44}".format('art table season unmatched') +            \
+                    acomment = analcolor +  "{:<44}".format('art table season unmatched') +            \
                     '[/COLOR]' + "{:10d}".format(int(slist[a][0])) + "{:10d}".format(int(slist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(slist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(art_id, media_id, media_type, type,      \
@@ -655,7 +658,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(alist) > 0:                            # Add actor unmatcheds
                 for a in range(len(alist)):
-                    acomment = '[COLOR blue]' +  "{:<47}".format('director_link table actor unmatched') +   \
+                    acomment = analcolor +  "{:<47}".format('director_link table actor unmatched') +   \
                     '[/COLOR]' + "{:10d}".format(int(alist[a][0])) + "{:10d}".format(int(alist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(alist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type,  clean,  \
@@ -664,7 +667,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
                       
             if len(mlist) > 0:                            # Add movie unmatcheds
                 for a in range(len(mlist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('director_link table movie unmatched') +   \
+                    acomment = analcolor +  "{:<45}".format('director_link table movie unmatched') +   \
                     '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:10d}".format(int(mlist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(mlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type,  clean,  \
@@ -673,7 +676,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(elist) > 0:                            # Add episode unmatcheds
                 for a in range(len(elist)):
-                    acomment = '[COLOR blue]' +  "{:<44}".format('director_link table episode unmatched') +  \
+                    acomment = analcolor +  "{:<44}".format('director_link table episode unmatched') +  \
                     '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:10d}".format(int(elist[a][1])) +     \
                     "{:<8}".format(' ') + "{:<16}".format(str(elist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type,  clean,   \
@@ -682,7 +685,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(vlist) > 0:                            # Add musicvideo unmatcheds
                 for a in range(len(vlist)):
-                    acomment = '[COLOR blue]' +  "{:<40}".format('director_link table musicvideo unmatched') + \
+                    acomment = analcolor +  "{:<40}".format('director_link table musicvideo unmatched') + \
                     '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:10d}".format(int(vlist[a][1])) +       \
                     "{:<8}".format(' ') + "{:<16}".format(str(vlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type,  clean,     \
@@ -750,7 +753,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(flist) > 0:                            # Add files unmatcheds
                 for a in range(len(flist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('episode table files unmatched') +         \
+                    acomment = analcolor +  "{:<45}".format('episode table files unmatched') +         \
                     '[/COLOR]' + "{:10d}".format(int(flist[a][0])) + "{:10d}".format(int(flist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(flist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idEpisode, idFile, c00, clean,         \
@@ -879,7 +882,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(flist) > 0:                            # Add movie, episode, musicvideos unmatcheds
                 for a in range(len(flist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('files table movie, episode, musicvideo unmatched') \
+                    acomment = analcolor +  "{:<45}".format('files table movie, episode, musicvideo unmatched') \
                     + '[/COLOR]' + "{:10d}".format(int(flist[a][0])) + "{:10d}".format(int(flist[a][1])) +           \
                     "{:<8}".format(' ') + "{:<16}".format(str(flist[a][5]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, idPath, dateAdded, clean, comments)  \
@@ -915,7 +918,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(alist) > 0:                            # Add path unmatcheds
                 for a in range(len(alist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('files table path unmatched')                  \
+                    acomment = analcolor +  "{:<45}".format('files table path unmatched')                  \
                     + '[/COLOR]' + "{:10d}".format(int(alist[a][0])) + "{:10d}".format(int(alist[a][1])) +      \
                     "{:<8}".format(' ') + "{:<16}".format(str(alist[a][5]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, idPath, dateAdded, clean, comments)  \
@@ -951,7 +954,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(alist) > 0:                            # Add files unmatcheds
                 for a in range(len(alist)):
-                    acomment = '[COLOR blue]' +  "{:<32}".format('path table files unmatched') + '[/COLOR]'       \
+                    acomment = analcolor +  "{:<32}".format('path table files unmatched') + '[/COLOR]'       \
                     + "{:10d}".format(int(alist[a][0])) + "{:<8}".format(' ') + "{:<36}".format(alist[a][1][:36]) \
                     + "{:<8}".format(' ') + "{:<16}".format(str(alist[a][11]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idPath, strPath, strContent, dateAdded,      \
@@ -1008,7 +1011,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
                       
             if len(mlist) > 0:                            # Add movie unmatcheds
                 for a in range(len(mlist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('genre_link table movie unmatched') +      \
+                    acomment = analcolor +  "{:<45}".format('genre_link table movie unmatched') +      \
                     '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:10d}".format(int(mlist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(mlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(genre_id, media_id, media_type, clean,   \
@@ -1017,7 +1020,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(elist) > 0:                            # Add episode unmatcheds
                 for a in range(len(elist)):
-                    acomment = '[COLOR blue]' +  "{:<44}".format('genre_link table episode unmatched') +    \
+                    acomment = analcolor +  "{:<44}".format('genre_link table episode unmatched') +    \
                     '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:10d}".format(int(elist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(elist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(genre_id, media_id, media_type, clean,   \
@@ -1026,7 +1029,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(slist) > 0:                            # Add tvswhow unmatcheds
                 for a in range(len(slist)):
-                    acomment = '[COLOR blue]' +  "{:<44}".format('genre_link table tvshow unmatched') +     \
+                    acomment = analcolor +  "{:<44}".format('genre_link table tvshow unmatched') +     \
                     '[/COLOR]' + "{:10d}".format(int(slist[a][0])) + "{:10d}".format(int(slist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(str(slist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(genre_id, media_id, media_type, clean,   \
@@ -1035,7 +1038,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(vlist) > 0:                            # Add musicvideo unmatcheds
                 for a in range(len(vlist)):
-                    acomment = '[COLOR blue]' +  "{:<40}".format('genre_link table musicvideo unmatched') +  \
+                    acomment = analcolor +  "{:<40}".format('genre_link table musicvideo unmatched') +  \
                     '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:10d}".format(int(vlist[a][1])) +     \
                     "{:<8}".format(' ') + "{:<16}".format(str(vlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(genre_id, media_id, media_type, clean,    \
@@ -1097,7 +1100,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(flist) > 0:                            # Add files unmatcheds
                 for a in range(len(flist)):
-                    acomment = '[COLOR blue]' +  "{:<47}".format('movie table files unmatched') +        \
+                    acomment = analcolor +  "{:<47}".format('movie table files unmatched') +        \
                     '[/COLOR]' + "{:10d}".format(int(flist[a][0])) + "{:10d}".format(int(flist[a][1])) + \
                     "{:<8}".format(' ') + "{:<16}".format(str(flist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idMovie, idFile, c00, clean, comments) \
@@ -1175,7 +1178,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(flist) > 0:                            # Add files unmatcheds
                 for a in range(len(flist)):
-                    acomment = '[COLOR blue]' +  "{:<47}".format('musicvideo table files unmatched') +     \
+                    acomment = analcolor +  "{:<47}".format('musicvideo table files unmatched') +     \
                     '[/COLOR]' +  "{:10d}".format(int(flist[a][0])) + "{:10d}".format(int(flist[a][1])) +  \
                     "{:<8}".format(' ') + "{:<16}".format(str(flist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idMVideo, idFile, c00, clean, comments) \
@@ -1228,7 +1231,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
             if len(tlist) > 0:                            # Add tvshow unmatcheds
                 for a in range(len(tlist)):
                     showname = 'TV Series name not found'
-                    acomment = '[COLOR blue]' +  "{:<40}".format('seasons table tvshow unmatched') +        \
+                    acomment = analcolor +  "{:<40}".format('seasons table tvshow unmatched') +        \
                     '[/COLOR]' + "{:10d}".format(int(tlist[a][0])) + "{:10d}".format(int(tlist[a][1])) +    \
                     "{:<8}".format(' ') + "{:<16}".format(showname)
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idSeason, idShow, name, clean, comments) \
@@ -1238,7 +1241,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
             if len(elist) > 0:                            # Add episode unmatcheds
                 for a in range(len(elist)):                   
                     showname = getShowName(dbtype, elist[a][1], elist[a][2])
-                    acomment = '[COLOR blue]' +  "{:<40}".format('seasons table episode unmatched') +        \
+                    acomment = analcolor +  "{:<40}".format('seasons table episode unmatched') +        \
                     '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:10d}".format(int(elist[a][1])) +     \
                     "{:<8}".format(' ') + "{:<16}".format(showname)
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idSeason, idShow, name, clean, comments)  \
@@ -1274,7 +1277,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(alist) > 0:                            # Add actor_link unmatcheds
                 for a in range(len(alist)):
-                    acomment = '[COLOR blue]' +  "{:<32}".format('sets table movie missing') + '[/COLOR]'  \
+                    acomment = analcolor +  "{:<32}".format('sets table movie missing') + '[/COLOR]'  \
                     + "{:12d}".format(int(str(alist[a][0]))) + "{:<12}".format(' ') + str(alist[a][1])
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idSet, strSet, clean, comments) values  \
                     (?, ?, ?, ?)', (alist[a][0], alist[a][1], 'Yes', acomment))
@@ -1316,7 +1319,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(vlist) > 0:                            # Add files unmatcheds
                 for a in range(len(vlist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('streamdetails table files unmatched') +  \
+                    acomment = analcolor +  "{:<45}".format('streamdetails table files unmatched') +  \
                     '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:10d}".format(int(vlist[a][1])) +   \
                     "{:<8}".format(' ') + "{:<16}".format(str('video codec'))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, iStreamType, clean, comments)   \
@@ -1325,7 +1328,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(alist) > 0:                            # Add streamdetails unmatcheds
                 for a in range(len(alist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('streamdetails table files unmatched') +  \
+                    acomment = analcolor +  "{:<45}".format('streamdetails table files unmatched') +  \
                     '[/COLOR]' + "{:10d}".format(int(alist[a][0])) + "{:10d}".format(int(alist[a][1])) +   \
                     "{:<8}".format(' ') + "{:<16}".format(str('audio codec'))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, iStreamType, clean, comments)   \
@@ -1387,7 +1390,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(tlist) > 0:                            # Add tag unmatcheds
                 for a in range(len(tlist)):
-                    acomment = '[COLOR blue]' +  "{:<47}".format('tag_link table tag unmatched') +                \
+                    acomment = analcolor +  "{:<47}".format('tag_link table tag unmatched') +                \
                     '[/COLOR]' + "{:10d}".format(int(tlist[a][0])) + "{:14d}".format(int(tlist[a][1])) +          \
                     "{:<12}".format(' ') + "{:<16}".format(str(tlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(tag_id, media_id, media_type, clean, comments) \
@@ -1396,7 +1399,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(elist) > 0:                            # Add episode unmatcheds
                 for a in range(len(elist)):
-                    acomment = '[COLOR blue]' +  "{:<44}".format('tag_link table episode unmatched') +            \
+                    acomment = analcolor +  "{:<44}".format('tag_link table episode unmatched') +            \
                     '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:14d}".format(int(elist[a][1])) +          \
                     "{:<12}".format(' ') + "{:<16}".format(str(elist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(tag_id, media_id, media_type, clean, comments) \
@@ -1405,7 +1408,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(mlist) > 0:                            # Add movie unmatcheds
                 for a in range(len(mlist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('tag_link table movie unmatched') +              \
+                    acomment = analcolor +  "{:<45}".format('tag_link table movie unmatched') +              \
                     '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:14d}".format(int(mlist[a][1])) +          \
                     "{:<12}".format(' ') + "{:<16}".format(str(mlist[a][2])) 
                     outdb.execute('INSERT OR REPLACE into vdb_temp(tag_id, media_id, media_type, clean, comments) \
@@ -1414,7 +1417,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(vlist) > 0:                            # Add musicvideo unmatcheds
                 for a in range(len(vlist)):
-                    acomment = '[COLOR blue]' +  "{:<40}".format('tag_link table musicvideo unmatched') +         \
+                    acomment = analcolor +  "{:<40}".format('tag_link table musicvideo unmatched') +         \
                     '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:14d}".format(int(vlist[a][1])) +          \
                     "{:<12}".format(' ') + "{:<16}".format(str(vlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(tag_id, media_id, media_type, clean, comments) \
@@ -1423,7 +1426,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(slist) > 0:                            # Add tvshow unmatcheds
                 for a in range(len(slist)):
-                    acomment = '[COLOR blue]' +  "{:<44}".format('tag_link table tvshow unmatched') +             \
+                    acomment = analcolor +  "{:<44}".format('tag_link table tvshow unmatched') +             \
                     '[/COLOR]' + "{:10d}".format(int(slist[a][0])) + "{:14d}".format(int(slist[a][1])) +          \
                     "{:<12}".format(' ') + "{:<16}".format(str(slist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(tag_id, media_id, media_type, clean, comments) \
@@ -1472,7 +1475,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
                       
             if len(slist) > 0:                            # Add seasons unmatcheds
                 for a in range(len(slist)):
-                    acomment = '[COLOR blue]' +  "{:<37}".format('tvshow table seasons unmatched')   \
+                    acomment = analcolor +  "{:<37}".format('tvshow table seasons unmatched')   \
                     +  '[/COLOR]' + "{:10d}".format(int(slist[a][0])) + "{:<8}".format(' ') +        \
                     "{:<16}".format(slist[a][1])
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idShow, c00, clean, comments)     \
@@ -1539,7 +1542,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(alist) > 0:                            # Add actor unmatcheds
                 for a in range(len(alist)):
-                    acomment = '[COLOR blue]' +  "{:<47}".format('writer_link table actor unmatched') +    \
+                    acomment = analcolor +  "{:<47}".format('writer_link table actor unmatched') +    \
                     '[/COLOR]' + "{:10d}".format(int(alist[a][0])) + "{:10d}".format(int(alist[a][1])) +   \
                     "{:<8}".format(' ') + "{:<16}".format(str(alist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type, clean,  \
@@ -1548,7 +1551,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
                       
             if len(mlist) > 0:                            # Add movie unmatcheds
                 for a in range(len(mlist)):
-                    acomment = '[COLOR blue]' +  "{:<45}".format('writer_link table movie unmatched') +    \
+                    acomment = analcolor +  "{:<45}".format('writer_link table movie unmatched') +    \
                     '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:10d}".format(int(mlist[a][1])) +   \
                     "{:<8}".format(' ') + "{:<16}".format(str(mlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type, clean,  \
@@ -1557,7 +1560,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(elist) > 0:                            # Add episode unmatcheds
                 for a in range(len(elist)):
-                    acomment = '[COLOR blue]' +  "{:<44}".format('writer_link table episode unmatched') +  \
+                    acomment = analcolor +  "{:<44}".format('writer_link table episode unmatched') +  \
                     '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:10d}".format(int(elist[a][1])) +   \
                     "{:<8}".format(' ') + "{:<16}".format(str(elist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(actor_id, media_id, media_type, clean,  \
@@ -1607,7 +1610,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(elist) > 0:                            # Add episode unmatcheds
                 for a in range(len(elist)):
-                    acomment = '[COLOR blue]' +  "{:<36}".format('uniqueid table episode unmatched') +  \
+                    acomment = analcolor +  "{:<36}".format('uniqueid table episode unmatched') +  \
                     '[/COLOR]' + "{:10d}".format(int(elist[a][0])) + "{:22d}".format(int(elist[a][1])) +   \
                     "{:<12}".format(' ') + "{:<16}".format(str(elist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(uniqueid, media_id, media_type, clean,  \
@@ -1616,7 +1619,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
                       
             if len(mlist) > 0:                            # Add movie unmatcheds
                 for a in range(len(mlist)):
-                    acomment = '[COLOR blue]' +  "{:<36}".format('uniqueid table movie unmatched') +    \
+                    acomment = analcolor +  "{:<36}".format('uniqueid table movie unmatched') +    \
                     '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:22d}".format(int(mlist[a][1])) +   \
                     "{:<12}".format(' ') + "{:<16}".format(str(mlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(uniqueid, media_id, media_type, clean,  \
@@ -1625,7 +1628,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(vlist) > 0:                            # Add musicvideos unmatcheds
                 for a in range(len(vlist)):
-                    acomment = '[COLOR blue]' +  "{:<36}".format('musicvideos table episode unmatched') +  \
+                    acomment = analcolor +  "{:<36}".format('musicvideos table episode unmatched') +  \
                     '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:22d}".format(int(vlist[a][1])) +   \
                     "{:<12}".format(' ') + "{:<16}".format(str(vlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(uniqueid, media_id, media_type, clean,  \
@@ -1674,7 +1677,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
                      
             if len(mlist) > 0:                            # Add movie unmatcheds
                 for a in range(len(mlist)):
-                    acomment = '[COLOR blue]' +  "{:<34}".format('videoversion table movie unmatched') +    \
+                    acomment = analcolor +  "{:<34}".format('videoversion table movie unmatched') +    \
                     '[/COLOR]' + "{:10d}".format(int(mlist[a][0])) + "{:16d}".format(int(mlist[a][1])) +   \
                     "{:<12}".format(' ') + "{:<16}".format(str(mlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, idMedia, media_type, clean,     \
@@ -1683,7 +1686,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(flist) > 0:                            # Add file unmatcheds
                 for a in range(len(flist)):
-                    acomment = '[COLOR blue]' +  "{:<37}".format('videoversion table file unmatched') +  \
+                    acomment = analcolor +  "{:<37}".format('videoversion table file unmatched') +  \
                     '[/COLOR]' + "{:10d}".format(int(flist[a][0])) + "{:16d}".format(int(flist[a][1])) +   \
                     "{:<12}".format(' ') + "{:<16}".format(str(flist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, idMedia, media_type, clean,  \
@@ -1692,7 +1695,7 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
 
             if len(vlist) > 0:                            # Add Type unmatcheds
                 for a in range(len(vlist)):
-                    acomment = '[COLOR blue]' +  "{:<37}".format('videoversion table type unmatched') +  \
+                    acomment = analcolor +  "{:<37}".format('videoversion table type unmatched') +  \
                     '[/COLOR]' + "{:10d}".format(int(vlist[a][0])) + "{:16d}".format(int(vlist[a][1])) +   \
                     "{:<12}".format(' ') + "{:<16}".format(str(vlist[a][2]))
                     outdb.execute('INSERT OR REPLACE into vdb_temp(idFile, idMedia, media_type, clean,  \
@@ -2221,6 +2224,7 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
             stable = []
             analyzelist = []
             dupeoutput = settings('dupeoutput')             #  Duplicate output format
+            analcolor = "[COLOR " + settings('analcolor').lower() + "]" 
             menuitem1 = translate(30300)                    #  Movies
             menuitem2 = translate(30322)                    #  Episodes
             menuitem3 = translate(30302)                    #  Music videos
@@ -2243,7 +2247,7 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
             for media in analyzelist:
                 #xbmc.log('KSCleaner loop string: ' + str(media), xbmc.LOGINFO) 
                 if media == menuitem1:                      # Analyze duplicate movies
-                    analyzeout = '[COLOR blue]Duplicate Movie Analysis by Title[/COLOR]\n'
+                    analyzeout = analcolor + 'Duplicate Movie Analysis by Title[/COLOR]\n'
                     if dbtype == 'mysql':
                         kcursor = kodidb.cursor()
                         kcursor.execute("SELECT movie_view.c00, strPath, strFileName FROM movie_view  \
@@ -2270,27 +2274,27 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
 
                     if len(mtlist) > 0:
                         for m in range(len(mtlist)):
-                             analyzeout += '\n[COLOR blue]Title:[/COLOR]   ' + mtlist[m][0]
-                             analyzeout += '\n[COLOR blue]Path:[/COLOR]  ' + mtlist[m][1]
-                             analyzeout += '\n[COLOR blue]File:[/COLOR]   ' + mtlist[m][2] + '\n'
+                             analyzeout += '\n' + analcolor + 'Title:[/COLOR]   ' + mtlist[m][0]
+                             analyzeout += '\n' + analcolor + 'Path:[/COLOR]  ' + mtlist[m][1]
+                             analyzeout += '\n' + analcolor + 'File:[/COLOR]   ' + mtlist[m][2] + '\n'
                     else:
                         analyzeout += '\nNo duplicate movies by title found.\n'
                     kgenlog = 'KSCleaner dupe movie title count: ' + str(len(mtlist))
                     kgenlogUpdate(kgenlog, 'No')  
 
-                    analyzeout += '\n[COLOR blue]Duplicate Movie Analysis by File[/COLOR]\n'
+                    analyzeout += '\n' + analcolor + 'Duplicate Movie Analysis by File[/COLOR]\n'
                     if len(mflist) > 0:
                         for m in range(len(mflist)):
-                             analyzeout += '\n[COLOR blue]File:[/COLOR]   ' + mflist[m][2]
-                             analyzeout += '\n[COLOR blue]Path:[/COLOR]  ' + mflist[m][1]
-                             analyzeout += '\n[COLOR blue]Title:[/COLOR]   ' + mflist[m][0] + '\n'
+                             analyzeout += '\n' + analcolor + 'File:[/COLOR]   ' + mflist[m][2]
+                             analyzeout += '\n' + analcolor + 'Path:[/COLOR]  ' + mflist[m][1]
+                             analyzeout += '\n' + analcolor + 'Title:[/COLOR]   ' + mflist[m][0] + '\n'
                     else:
                         analyzeout += '\nNo duplicate movies by file found.\n'
                     kgenlog = 'KSCleaner dupe movie file count: ' + str(len(mflist))
                     kgenlogUpdate(kgenlog, 'No') 
 
                 if media == menuitem2:                      # Analyze duplicate episode videos
-                    analyzeout += '\n[COLOR blue]Duplicate TV Episodes Analysis by Show, Season and Episode[/COLOR]\n'
+                    analyzeout += '\n' + analcolor + 'Duplicate TV Episodes Analysis by Show, Season and Episode[/COLOR]\n'
                     if dbtype == 'mysql':
                         kcursor = kodidb.cursor()
                         if settings('enhepdupe') == 'true':
@@ -2337,18 +2341,18 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
 
                             xbmc.log('KSCleaner dupe TV epiosde data: ' + str(eolist), xbmc.LOGDEBUG)
                             for o in range(len(eolist)): 
-                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('Show:') + '[/COLOR]' + eolist[o][5]
-                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('Season:') + '[/COLOR]' + eolist[o][1]
-                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('Episode:') + '[/COLOR]' + eolist[o][2]
-                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('Aired:') + '[/COLOR]' + eolist[o][6]
-                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('Path:') + '[/COLOR]' + eolist[o][3]
-                                analyzeout += '\n[COLOR blue]' + "{:<9}".format('File:') + '[/COLOR]' + eolist[o][4] + '\n'
+                                analyzeout += '\n' + analcolor + "{:<9}".format('Show:') + '[/COLOR]' + eolist[o][5]
+                                analyzeout += '\n' + analcolor + "{:<9}".format('Season:') + '[/COLOR]' + eolist[o][1]
+                                analyzeout += '\n' + analcolor + "{:<9}".format('Episode:') + '[/COLOR]' + eolist[o][2]
+                                analyzeout += '\n' + analcolor + "{:<9}".format('Aired:') + '[/COLOR]' + eolist[o][6]
+                                analyzeout += '\n' + analcolor + "{:<9}".format('Path:') + '[/COLOR]' + eolist[o][3]
+                                analyzeout += '\n' + analcolor + "{:<9}".format('File:') + '[/COLOR]' + eolist[o][4] + '\n'
                     else:
                         analyzeout += '\nNo duplicate TV episodes by show, season and episode found.\n'
                     kgenlog = 'KSCleaner dupe TV episodes by show, season and episode count: ' + str(len(eslist))
                     kgenlogUpdate(kgenlog, 'No') 
 
-                    analyzeout += '\n[COLOR blue]Duplicate TV Episodes Analysis by File[/COLOR]\n'
+                    analyzeout += '\n' + analcolor + 'Duplicate TV Episodes Analysis by File[/COLOR]\n'
                     if dbtype == 'mysql':
                         kcursor = kodidb.cursor()
                         if settings('enhepdupe') == 'true':
@@ -2380,20 +2384,20 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
 
                     if len(eflist) > 0:
                         for m in range(len(eflist)):
-                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('File:') + '[/COLOR]' + eflist[m][2]
-                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Path:') + '[/COLOR]' + eflist[m][1]
-                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Show:') + '[/COLOR]' + eflist[m][3]
-                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Season:') + '[/COLOR]' + eflist[m][4]
-                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Episode:') + '[/COLOR]' + eflist[m][5]
-                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Aired:') + '[/COLOR]' + eflist[m][6]
-                            analyzeout += '\n[COLOR blue]' + "{:<9}".format('Title:') + '[/COLOR]' + eflist[m][0] + '\n'
+                            analyzeout += '\n' + analcolor + "{:<9}".format('File:') + '[/COLOR]' + eflist[m][2]
+                            analyzeout += '\n' + analcolor + "{:<9}".format('Path:') + '[/COLOR]' + eflist[m][1]
+                            analyzeout += '\n' + analcolor + "{:<9}".format('Show:') + '[/COLOR]' + eflist[m][3]
+                            analyzeout += '\n' + analcolor + "{:<9}".format('Season:') + '[/COLOR]' + eflist[m][4]
+                            analyzeout += '\n' + analcolor + "{:<9}".format('Episode:') + '[/COLOR]' + eflist[m][5]
+                            analyzeout += '\n' + analcolor + "{:<9}".format('Aired:') + '[/COLOR]' + eflist[m][6]
+                            analyzeout += '\n' + analcolor + "{:<9}".format('Title:') + '[/COLOR]' + eflist[m][0] + '\n'
                     else:
                         analyzeout += '\nNo duplicate TV episodes by file found.\n'
                     kgenlog = 'KSCleaner dupe TV epiosdes file count: ' + str(len(eflist))
                     kgenlogUpdate(kgenlog, 'No') 
 
                 if media == menuitem3:                      # Analyze duplicate music videos
-                    analyzeout += '\n[COLOR blue]Duplicate Music Videos Analysis by Title[/COLOR]\n'
+                    analyzeout += '\n' + analcolor + 'Duplicate Music Videos Analysis by Title[/COLOR]\n'
                     if dbtype == 'mysql':
                         kcursor = kodidb.cursor()
                         kcursor.execute("SELECT musicvideo_view.c00, strPath, strFileName FROM musicvideo_view  \
@@ -2420,20 +2424,20 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
 
                     if len(mvtlist) > 0:
                         for m in range(len(mvtlist)):
-                             analyzeout += '\n[COLOR blue]Title:[/COLOR]   ' + mvtlist[m][0]
-                             analyzeout += '\n[COLOR blue]Path:[/COLOR]  ' + mvtlist[m][1]
-                             analyzeout += '\n[COLOR blue]File:[/COLOR]   ' + mvtlist[m][2] + '\n'
+                             analyzeout += '\n' + analcolor + 'Title:[/COLOR]   ' + mvtlist[m][0]
+                             analyzeout += '\n' + analcolor + 'Path:[/COLOR]  ' + mvtlist[m][1]
+                             analyzeout += '\n' + analcolor + 'File:[/COLOR]   ' + mvtlist[m][2] + '\n'
                     else:
                         analyzeout += '\nNo duplicate music videos by title found.\n'
                     kgenlog = 'KSCleaner dupe music video title count: ' + str(len(mvtlist))
                     kgenlogUpdate(kgenlog, 'No') 
 
-                    analyzeout += '\n[COLOR blue]Duplicate Music Videos Analysis by File[/COLOR]\n'
+                    analyzeout += '\n' + analcolor + 'Duplicate Music Videos Analysis by File[/COLOR]\n'
                     if len(mvflist) > 0:
                         for m in range(len(mflist)):
-                             analyzeout += '\n[COLOR blue]File:[/COLOR]   ' + mvflist[m][2]
-                             analyzeout += '\n[COLOR blue]Path:[/COLOR]  ' + mvflist[m][1]
-                             analyzeout += '\n[COLOR blue]Title:[/COLOR]   ' + mvflist[m][0] + '\n'
+                             analyzeout += '\n' + analcolor + 'File:[/COLOR]   ' + mvflist[m][2]
+                             analyzeout += '\n' + analcolor + 'Path:[/COLOR]  ' + mvflist[m][1]
+                             analyzeout += '\n' + analcolor + 'Title:[/COLOR]   ' + mvflist[m][0] + '\n'
                     else:
                         analyzeout += '\nNo duplicate music videos by file found.\n'
                     kgenlog = 'KSCleaner dupe music videos file count: ' + str(len(mvflist))
@@ -2449,7 +2453,7 @@ def dupeCheck(dbtype):                                      #  Duplicate media a
                 fpart = datetime.now().strftime('%H%M%S')
                 outfile = folderpath + "kscleaner_dupe_analyzer_" + fpart + ".txt" 
                 with io.open(outfile,'w',encoding='utf8') as fileh:
-                    analyzetxt = analyzeout.replace('[COLOR blue]', '').replace('[/COLOR]   ', '\t')
+                    analyzetxt = analyzeout.replace(analcolor, '').replace('[/COLOR]   ', '\t')
                     fileh.write(analyzetxt.replace('[/COLOR]  ', '\t').replace('[/COLOR]', ''))
                 fileh.close()
 

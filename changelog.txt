@@ -67,6 +67,9 @@
 - Added Duplicate Video Analysis feature
 - Updated and organized addon settings tabs
 - Minor error condition logging improvements
+1.0.8  11/22/2024
+- Added support for Kodi 22 Piers interim development builds
+- Added the ability to select the color of records flagged for cleaning notification
 
 
   

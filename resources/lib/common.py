@@ -56,6 +56,10 @@ def getDatabaseName(dbtype):
         return "MyVideos131.db"
     elif installed_version == '21' and dbtype == 'mysql':
         return "131"
+    elif installed_version == '22'  and dbtype == 'local':
+        return "MyVideos133.db"
+    elif installed_version == '22' and dbtype == 'mysql':
+        return "133"
        
     return "" 
 
@@ -73,7 +77,11 @@ def getmuDatabaseName(dbtype):
     elif installed_version == '21'  and dbtype == 'local':
         return "MyMusic83.db"
     elif installed_version == '21' and dbtype == 'mysql':
-        return "83"      
+        return "83"
+    elif installed_version == '22'  and dbtype == 'local':
+        return "MyMusic83.db"
+    elif installed_version == '22' and dbtype == 'mysql':
+        return "83"         
     return ""  
 
 
@@ -85,7 +93,8 @@ def getteDatabaseName():
         return "Textures13.db"
     elif installed_version == '21':
         return "Textures13.db"   
-    
+    elif installed_version == '22':
+        return "Textures14.db"     
     return ""  
 
 
@@ -444,6 +453,7 @@ def kgenlogUpdate(kgenlog, kdlog = 'Yes', dbfile = None):  #  Add logs to DB
 def tempDisplay(vtable, vheader = '', counts = '', mode = ''):
 
     try:        
+        analcolor = "[COLOR " + settings('analcolor').lower() + "]" 
         tempdb = openKscleanDB()
         curr = tempdb.execute('SELECT comments FROM vdb_temp')
         mglogs = curr.fetchall()                                     # Get logs from database
@@ -454,7 +464,7 @@ def tempDisplay(vtable, vheader = '', counts = '', mode = ''):
         else:
             #textval1 = "{:^128}".format(translate(30357) + ' - ' + vtable )  + '\n\n' + vheader
             textval1 = "{:>72}".format(translate(30357) + ' - ' + vtable ) + '\n'  
-            textval1 = textval1 + '[COLOR blue]' + "{:>48}".format('Clean Count: ' + counts[1]) + '[/COLOR]'
+            textval1 = textval1 + analcolor + "{:>48}".format('Clean Count: ' + counts[1]) + '[/COLOR]'
             textval1 = textval1 + "{:>32}".format('Data Integrity Count: ' + counts[0]) + '\n\n' + vheader
         textval1 += '\n'
 

@@ -480,6 +480,10 @@ msgctxt "#30415"
 msgid "Retain Analysis Files"
 msgstr ""
 
+msgctxt "#30416"
+msgid "Clean Record Text Color"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
 msgstr ""
@@ -521,3 +525,6 @@ msgid "Enables and select output format for video media analysis.  This will pro
 
 msgctxt "#30610"
 msgid "Enabled keeps all copies of analysis text files and CSV output files.  Disabled only keeps the copies during the current KS Cleaner session and old files are deleted when the addon restarts.  Enabled is default."
+
+msgctxt "#30611"
+msgid "Selct color for  database records which will be cleaned.  Blue is default."
