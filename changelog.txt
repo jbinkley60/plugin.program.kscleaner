@@ -70,6 +70,9 @@
 1.0.8  11/22/2024
 - Added support for Kodi 22 Piers interim development builds
 - Added the ability to select the color of records flagged for cleaning notification
+1.0.9 9/3/2025
+- Updated support for Kodi 22 Piers Alpha 1 release
+- Added the ability to export the video database rating table
 
 
   

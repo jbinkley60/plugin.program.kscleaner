@@ -527,4 +527,4 @@ msgctxt "#30610"
 msgid "Enabled keeps all copies of analysis text files and CSV output files.  Disabled only keeps the copies during the current KS Cleaner session and old files are deleted when the addon restarts.  Enabled is default."
 
 msgctxt "#30611"
-msgid "Selct color for  database records which will be cleaned.  Blue is default."
+msgid "Selct color for database records which will be cleaned.  Blue is default."

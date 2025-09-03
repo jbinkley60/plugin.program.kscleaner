@@ -7,7 +7,7 @@ and Music databases
 
 
 <b>Features:</b>
-- Kodi 19, 20 and 21 compatible.
+- Kodi 19, 20, 21 and 22 compatible.
 - Support for both Kodi Local and MySQL databases
 - Individually select data  in the Kodi video and music databases
 - <a href="https://github.com/jbinkley60/plugin.program.kscleaner/wiki/Database-Analyzer">Database analyzer</a> to find and delete orphaned or mismatched data
