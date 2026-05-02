@@ -29,40 +29,42 @@ def exportData(selectbl, dbtype = None, tablenm = None):         # CSV Output se
         selectindex = 100
         for a in range(len(selectbl)):
             fpart = datetime.now().strftime('%H%M%S')
-            if dbtype == None :                                  # Logs CSV export
-                selectindex = int(selectbl[a][:2])               # Get list index to determine DB
-                selectname = selectbl[a][2:]                     # Parse table name in DB
+            if dbtype == None :                                    # Logs CSV export
+                selectindex = int(selectbl[a][:2])                 # Get list index to determine DB
+                selectname = selectbl[a][2:]                       # Parse table name in DB
 
                 #xbmc.log("Mezzmo selectable is: " +  str(selectindex) + ' ' + selectname, xbmc.LOGINFO)
-                if selectindex < 21:                             # Export Kodi video DB tables
+                if selectindex < 21:                               # Export Kodi video DB tables
                     dbexport = openKodiDB(dbextype)
                     dbase = 'videos_'
-                elif selectindex < 41:                           # Export Kodi music DB tables
+                elif selectindex < 41:                             # Export Kodi music DB tables
                     dbexport = openKodiMuDB(dbmuextype)
                     dbase = 'music_'
                 else:
-                    dbexport = openKodiTeDB()                    # Export Kodi video textures tables
+                    dbexport = openKodiTeDB()                      # Export Kodi video textures tables
                     dbase = 'textures_'                
-            elif dbtype == 'analyzer':                           # Export video / music analyzer output
+            elif dbtype == 'analyzer' or dbtype == 'artanalyzer':  # Export video / music / artwork analyzer output
                 selectname = selectbl[0]                
                 dbexport = openKscleanDB()
-            elif dbtype == 'logs':                               # Export KS Cleaner logs
+            elif dbtype == 'logs':                                 # Export KS Cleaner logs
                 selectname = selectbl[0]
                 dbexport = openKscleanDB()
                 dbase = 'addon_'
 
             if dbtype == 'analyzer':
-                outfile = folderpath + "kscleaner_video_analyzer_" + tablenm + "_" + fpart + ".csv"                
+                outfile = folderpath + "kscleaner_video_analyzer_" + tablenm + "_" + fpart + ".csv"
+            elif dbtype == 'artanalyzer':
+                outfile = folderpath + "kscleaner_artwork_analysis_" + tablenm.replace(' ' , '_') +  "_" + fpart + ".csv"                
             else:
                 outfile = folderpath + "kscleaner_" + dbase + selectname + "_" + fpart + ".csv"
-            if dbextype == 'mysql' and dbtype != 'analyzer' and selectindex < 21:
+            if dbextype == 'mysql' and dbtype != 'analyzer' and dbtype != 'artanalyzer' and selectindex < 21:
                 kcursor = dbexport.cursor()
                 kcursor.execute("SELECT * FROM %s"% selectname)
                 recs = kcursor.fetchall()
                 kcursor.column_names
                 headers = [i[0] for i in kcursor.description]
                 kcursor.close()
-            elif dbmuextype == 'mysql' and dbtype != 'analyzer' and selectindex < 41:
+            elif dbmuextype == 'mysql' and dbtype != 'analyzer' and dbtype != 'artanalyzer' and selectindex < 41:
                 kcursor = dbexport.cursor()
                 kcursor.execute("SELECT * FROM %s"% selectname)
                 recs = kcursor.fetchall()
@@ -99,10 +101,13 @@ def exportData(selectbl, dbtype = None, tablenm = None):         # CSV Output se
                     recsencode.append(recitem) 
                 csvFile.writerow(recsencode)                
             dbexport.close()
+        kgenlogUpdate('KS Cleaner Data Export: ' + outfile, 'No')
 
-        outmsg = folderpath
-        dialog_text = translate(30318) + outmsg 
+        #outmsg = outfile
+        dialog_text = translate(30318) + "\n" + outfile 
         xbmcgui.Dialog().ok(translate(30319), dialog_text)
+
+        
 
     except Exception as e:
         printexception()

@@ -37,7 +37,7 @@ msgid "View Logs"
 msgstr ""
 
 msgctxt "#30305"
-msgid "Database Backup"
+msgid "Database Backups"
 msgstr ""
 
 msgctxt "#30306"
@@ -329,7 +329,7 @@ msgid "MySQL Video Database Name"
 msgstr ""
 
 msgctxt "#30378"
-msgid "MySQL Video Music Name"
+msgid "MySQL Music Database Name"
 msgstr ""
 
 msgctxt "#30379"
@@ -484,6 +484,171 @@ msgctxt "#30416"
 msgid "Clean Record Text Color"
 msgstr ""
 
+msgctxt "#30417"
+msgid "Video Database Statistics"
+msgstr ""
+
+msgctxt "#30418"
+msgid "Video Database Reindex"
+msgstr ""
+
+msgctxt "#30419"
+msgid "Video Database Shrink / Vacuum"
+msgstr ""
+
+msgctxt "#30420"
+msgid "Video database reindex complete"
+msgstr ""
+
+msgctxt "#30421"
+msgid "Video database vacuum complete"
+msgstr ""
+
+msgctxt "#30422"
+msgid "MySQL database utilities are not supported and should leverage normal MySQL dba management solutions."
+msgstr ""
+
+msgctxt "#30423"
+msgid "Music Database Statistics"
+msgstr ""
+
+msgctxt "#30424"
+msgid "Music Database Reindex"
+msgstr ""
+
+msgctxt "#30425"
+msgid "Music Database Shrink / Vacuum"
+msgstr ""
+
+msgctxt "#30426"
+msgid "Music database reindex complete"
+msgstr ""
+
+msgctxt "#30427"
+msgid "Music database vacuum complete"
+msgstr ""
+
+msgctxt "#30428"
+msgid "Automatic Dataabse Backup Reminder"
+msgstr ""
+
+msgctxt "#30429"
+msgid "Do you want to do a database backup prior to performinhg this maintenance activity ?"
+msgstr ""
+
+msgctxt "#30430"
+msgid "Select All "
+msgstr ""
+
+msgctxt "#30431"
+msgid " Activity "
+msgstr ""
+
+msgctxt "#30432"
+msgid "Clear Bookmark"
+msgstr ""
+
+msgctxt "#30433"
+msgid "Set to Not Played"
+msgstr ""
+
+msgctxt "#30434"
+msgid "Set to Played"
+msgstr ""
+
+msgctxt "#30435"
+msgid "Remove from Kodi DB"
+msgstr ""
+
+msgctxt "#30436"
+msgid "Video Artwork Validation"
+msgstr ""
+
+msgctxt "#30437"
+msgid "Bookmark cleared for "
+msgstr ""
+
+msgctxt "#30438"
+msgid "Playcount set to 0 for "
+msgstr ""
+
+msgctxt "#30439"
+msgid "Playcount set to 1 for "
+msgstr ""
+
+msgctxt "#30440"
+msgid "Artwork"
+msgstr ""
+
+msgctxt "#30441"
+msgid "Detailed Artwork Validation Logging"
+msgstr ""
+
+msgctxt "#30442"
+msgid "Analyze Artwork"
+msgstr ""
+
+msgctxt "#30443"
+msgid "Analyze / Clean Artwork"
+msgstr ""
+
+msgctxt "#30444"
+msgid "Artwork URLs processed "
+msgstr ""
+
+msgctxt "#30445"
+msgid "Video Artwork Validation Progress"
+msgstr ""
+
+msgctxt "#30446"
+msgid "Artwork validation beginning"
+msgstr ""
+
+msgctxt "#30447"
+msgid "Artwork skipped: "
+msgstr ""
+
+msgctxt "#30448"
+msgid "Artwork found: "
+msgstr ""
+
+msgctxt "#30449"
+msgid "Artwork not found: "
+msgstr ""
+
+msgctxt "#30450"
+msgid "Video Artwork Validation Results - "
+msgstr ""
+
+msgctxt "#30451"
+msgid " files"
+msgstr ""
+
+msgctxt "#30452"
+msgid " Selected "
+msgstr ""
+
+msgctxt "#30453"
+msgid "path - loose checking"
+msgstr ""
+
+msgctxt "#30454"
+msgid "Video DB Path Table Loose Cleaning"
+msgstr ""
+
+msgctxt "#30455"
+msgid "There is a problem opening the Kodi textures database."
+msgstr ""
+
+msgctxt "#30456"
+msgid "Local Video Database Name"
+msgstr ""
+
+msgctxt "#30457"
+msgid "Local Music Database Name"
+msgstr ""
+
+
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
 msgstr ""
@@ -493,7 +658,7 @@ msgid "Select the database type Kodi is using.  The default is Kodi local."
 msgstr ""
 
 msgctxt "#30602"
-msgid "Enable to enforce file table entries are matched to movies, music and music video table entries.  See KS CLeaner Wiki for more information.  The default is disabled."
+msgid "Enable to enforce file table entries are matched to movies, music and music video table entries.  See KS Cleaner Wiki for more information.  The default is disabled."
 msgstr ""
 
 msgctxt "#30603"
@@ -522,9 +687,65 @@ msgstr ""
 
 msgctxt "#30609"
 msgid "Enables and select output format for video media analysis.  This will provide a menu option to analyze all video database tables without cleaning.  Options are GUI, text file, both or off. Default is GUI."
+msgstr ""
 
 msgctxt "#30610"
-msgid "Enabled keeps all copies of analysis text files and CSV output files.  Disabled only keeps the copies during the current KS Cleaner session and old files are deleted when the addon restarts.  Enabled is default."
+msgid "Enabled keeps all copies of analysis text files and CSV output files.  Disabled only keeps the copies during the current KS Cleaner session and old files are deleted when the addon restarts.  Default is enabled."
+msgstr ""
 
 msgctxt "#30611"
 msgid "Selct color for database records which will be cleaned.  Blue is default."
+msgstr ""
+
+msgctxt "#30612"
+msgid "Maintenance"
+msgstr ""
+
+msgctxt "#30613"
+msgid "Database Maintenance Options"
+msgstr ""
+
+msgctxt "#30614"
+msgid "Enabled adds an additional set of menu items to perform various database maintenance activities for Kodi local databases.  Default is disabled."
+msgstr ""
+
+msgctxt "#30615"
+msgid "Database Backup Utilities"
+msgstr ""
+
+msgctxt "#30616"
+msgid "Enabled adds an additional set of menu items to perform various database backup options for Kodi local databases.  Default is ensabled."
+msgstr ""
+
+msgctxt "#30617"
+msgid "Database Maintenance"
+msgstr ""
+
+msgctxt "#30618"
+msgid "Enabled adds an automatic database backup reminder when performing certain database maintenance activities. Default is ensabled."
+msgstr ""
+
+msgctxt "#30619"
+msgid "Enabled adds an additional menu option for validating whether video artwork items exist and an option for cleaning missing artwork.  Default is disabled."
+msgstr ""
+
+msgctxt "#30620"
+msgid "Enabled provides detailed artwork validation logging for success, failures and URL based skips.  Disabled only logs artwork validation failures.  Default is disabled."
+msgstr ""
+
+msgctxt "#30621"
+msgid "Do you want to permanently delete these artork entries ?  This action can only be undone by restoring your Kodi DB."
+msgstr ""
+
+msgctxt "#30622"
+msgid "Enable to reduce path table strictness and check for path entries with just missing parent paths.  See KS Cleaner Wiki for more information.  The default is disabled."
+msgstr ""
+
+msgctxt "#30623"
+msgid "Enter a new value for your local Kodi video DB file name to override the default.  This is normally left default except during alpha and beta testing. See the KS Cleaner Wiki for more details"
+msgstr ""
+
+msgctxt "#30624"
+msgid "Enter a new value for your local Kodi music DB file name to override the default.  This is normally left default except during alpha and beta testing. See the KS Cleaner Wiki for more details"
+msgstr ""
+

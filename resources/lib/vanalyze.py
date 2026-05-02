@@ -38,7 +38,10 @@ def vanalMenu(dbtype):                                     # Select table to exp
             menuitem13 = translate(30359)		   # genre_link table
             menuitem14 = translate(30360)		   # seasons table
             menuitem15 = translate(30361)		   # tag_link table
-            menuitem16 = translate(30379)		   # path table
+            if settings('loosepath') == 'false':
+                menuitem16 = translate(30379)		   # path table
+            else:
+                menuitem16 = translate(30453)
             menuitem17 = translate(30401)		   # uniqueid table
             menuitem18 = translate(30403)		   # video versions table
             menuitem19 = translate(30404)                  # Duplicate Media Analysis
@@ -61,14 +64,14 @@ def vanalMenu(dbtype):                                     # Select table to exp
             elif selectbl[stable] == menuitem0:            # Clean all tables
                 if menuitem19 in selectbl: selectbl.remove(menuitem19)   # Remove Duplicate Media from list
                 if menuitem20 in selectbl: selectbl.remove(menuitem20)   # Remove Analyze All from list
-                if menuitem0 in selectbl: selectbl.remove(menuitem0)     # Remove Clena All from list
+                if menuitem0 in selectbl: selectbl.remove(menuitem0)     # Remove Clean All from list
                 cleanAll(selectbl, dbtype)
             elif selectbl[stable] == menuitem19:           # Duplicate Media Analysis
                 dupeCheck(dbtype)
             elif selectbl[stable] == menuitem20:           # Analyze All Analysis
                 if menuitem19 in selectbl: selectbl.remove(menuitem19)   # Remove Duplicate Media from list
                 if menuitem20 in selectbl: selectbl.remove(menuitem20)   # Remove Analyze All from list
-                if menuitem0 in selectbl: selectbl.remove(menuitem0)     # Remove Clena All from list
+                if menuitem0 in selectbl: selectbl.remove(menuitem0)     # Remove Clean All from list
                 #nofeature()
                 analyzeAll(selectbl, dbtype)  
             else:
@@ -927,8 +930,43 @@ def vdbAnalysis(vtable, dbtype):                        # Analyze table
             outdb.close()
             return orprecs
 
+        #============================  Path Loose Table analysis ==============================
 
-        #============================  Path Table analysis ==============================
+        if 'loose' in vtable:                            # Check tables for unmatched data
+            if dbtype == 'mysql':
+                kcursor = kodidb.cursor()
+                kcursor.execute("select * from path where idParentPath not in (select idPath from \
+                path where idPath is not NULL and idParentPath is NULL) ")
+                alist = kcursor.fetchall()
+                kcursor.close()
+            else:  
+                cura = kodidb.execute('select * from path where idParentPath not in (select idPath \
+                from path where idPath is not NULL and idParentPath is NULL)')
+                alist = cura.fetchall()
+                del cura
+            kodidb.close()
+            orprecs = len(alist)
+            xbmc.log('Kodi selective cleaner analyzer: ' + str(len(alist)), xbmc.LOGDEBUG)
+            if orprecs == 0:                              # No unmatched records found
+                outdb.close()
+                return 0
+            outdb.execute('CREATE TABLE vdb_temp(idPath integer, strPath text, strContent text,    \
+            dateAdded text, clean TEXT, comments TEXT)')
+            outdb.commit()
+
+            if len(alist) > 0:                            # Add files unmatcheds
+                for a in range(len(alist)):
+                    acomment = analcolor +  "{:<32}".format('path table parent path unmatched') + '[/COLOR]'       \
+                    + "{:10d}".format(int(alist[a][0])) + "{:<8}".format(' ') + "{:<36}".format(alist[a][1][:36]) \
+                    + "{:<8}".format(' ') + "{:<16}".format(str(alist[a][11]))
+                    outdb.execute('INSERT OR REPLACE into vdb_temp(idPath, strPath, strContent, dateAdded,      \
+                    clean, comments) values (?, ?, ?, ?, ?, ?)', (alist[a][0], alist[a][1], alist[a][2],        \
+                    alist[a][11], 'Yes', acomment))
+                outdb.commit()
+            outdb.close()
+            return orprecs
+
+        #============================  Path Normal Table analysis ==============================
 
         if vtable == 'path':                            # Check tables for unmatched data
             if dbtype == 'mysql':

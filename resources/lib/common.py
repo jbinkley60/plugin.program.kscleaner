@@ -57,9 +57,9 @@ def getDatabaseName(dbtype):
     elif installed_version == '21' and dbtype == 'mysql':
         return "131"
     elif installed_version == '22'  and dbtype == 'local':
-        return "MyVideos137.db"
+        return "MyVideos144.db"
     elif installed_version == '22' and dbtype == 'mysql':
-        return "137"
+        return "144"
        
     return "" 
 
@@ -79,9 +79,9 @@ def getmuDatabaseName(dbtype):
     elif installed_version == '21' and dbtype == 'mysql':
         return "83"
     elif installed_version == '22'  and dbtype == 'local':
-        return "MyMusic83.db"
+        return "MyMusic84.db"
     elif installed_version == '22' and dbtype == 'mysql':
-        return "83"         
+        return "84"         
     return ""  
 
 
@@ -233,15 +233,29 @@ def parseConfig(config_file, database, dbtype):
         return None
 
 
-def openKodiDB(dbtype):                               #  Open Kodi database
+def openKodiDB(dbtype, logging = 'no'):                       #  Open Kodi video database
 
     if dbtype == 'local':
         try:
             from sqlite3 import dbapi2 as sqlite
         except:
             from pysqlite2 import dbapi2 as sqlite
-                      
-        DB = os.path.join(xbmcvfs.translatePath("special://database"), getDatabaseName(dbtype))
+
+        ldbname = settings('dblvidname')
+        if '.db' in ldbname.lower():
+            dbname = ldbname
+        else:
+            dbname = getDatabaseName(dbtype)                      
+        DB = os.path.join(xbmcvfs.translatePath("special://database"), dbname)
+
+        if not os.path.isfile(DB):
+             kgenlog = "KS Cleaner Kodi video database file not found: " + dbname
+             kgenlogUpdate(kgenlog)
+             xbmcgui.Dialog().ok(translate(30308), translate(30372).replace('MySQL', '') + " \n" + dbname)
+             sys.exit()
+        elif logging.lower() == 'yes':
+             kgenlog = "KS Cleaner Kodi video database found: " + dbname
+             kgenlogUpdate(kgenlog)
         db = sqlite.connect(DB)
 
         return(db)
@@ -291,15 +305,31 @@ def openKodiDB(dbtype):                               #  Open Kodi database
             xbmcgui.Dialog().ok(translate(30303), translate(30372))
 
 
-def openKodiMuDB(dbtype):                           #  Open Kodi music database
+def openKodiMuDB(dbtype, logging = 'no'):                  #  Open Kodi music database
 
     if dbtype == 'local':
         try:
             from sqlite3 import dbapi2 as sqlite
         except:
             from pysqlite2 import dbapi2 as sqlite
-                      
-        DB = os.path.join(xbmcvfs.translatePath("special://database"), getmuDatabaseName(dbtype))
+
+        ldbname = settings('dblmusname')
+        if '.db' in ldbname.lower():
+            dbname = ldbname
+        else:
+            dbname = getmuDatabaseName(dbtype)   
+                   
+        DB = os.path.join(xbmcvfs.translatePath("special://database"), dbname)
+
+        if not os.path.isfile(DB):
+             kgenlog = "KS Cleaner Kodi music database file not found: " + dbname
+             kgenlogUpdate(kgenlog)
+             xbmcgui.Dialog().ok(translate(30308), translate(30373).replace('MySQL', '') + " \n" + dbname)
+             sys.exit()
+        elif logging.lower() == 'yes':
+             kgenlog = "KS Cleaner Kodi music database found: " + dbname
+             kgenlogUpdate(kgenlog)
+
         db = sqlite.connect(DB)
 
         return(db)  
@@ -354,8 +384,18 @@ def openKodiTeDB():                                  #  Open Kodi textures datab
         from sqlite3 import dbapi2 as sqlite
     except:
         from pysqlite2 import dbapi2 as sqlite
-                      
-    DB = os.path.join(xbmcvfs.translatePath("special://database"), getteDatabaseName())
+
+    dbname = getteDatabaseName()                  
+    DB = os.path.join(xbmcvfs.translatePath("special://database"), dbname)
+
+    if not os.path.isfile(DB):
+         kgenlog = "KS Cleaner Kodi textures database file not found: " + dbname
+         kgenlogUpdate(kgenlog)
+         xbmcgui.Dialog().ok(translate(30308), translate(30455) + " \n" + dbname)
+         sys.exit()
+    else:
+         kgenlog = "KS Cleaner Kodi textures database found: " + dbname
+         kgenlogUpdate(kgenlog)
     db = sqlite.connect(DB)
 
     return(db)  
@@ -394,7 +434,48 @@ def openKodiOutDB(dbtype, fcopy='no'):                    #  Open Kodi output da
         db = sqlite.connect(DB)
     else:
         db = ''
-    return[db, ppart, dbpath, DB]   
+    return[db, ppart, dbpath, DB]
+
+
+def vftUpdate(action, fileId, dbtype, playcount = 'none'):      # Update / delete files from video file table 
+
+        dbfile = openKodiDB(dbtype)                             # Open Kodi video database
+        
+        if action == 'playcount' and playcount == 1:
+            if dbtype == 'mysql':
+                kcursor = dbfile.cursor()
+                varquery = list([playcount, fileId])
+                uquery = "UPDATE files SET playCount = %d and WHERE idFile = %d"
+                kcursor.execute(uquery, varquery)
+                kcursor.close() 
+            else:
+                dbfile.execute('UPDATE files SET playCount = ? WHERE idFile = ?', (playcount, fileId,))
+        elif action == 'playcount' and playcount == 0:
+            if dbtype == 'mysql':
+                kcursor = dbfile.cursor()
+                varquery = list([fileId])
+                uquery = "UPDATE files SET playCount = NULL, lastPlayed=NULL WHERE idFile = %d"
+                kcursor.execute(uquery, varquery)
+                kcursor.close()
+            else:
+                dbfile.execute('UPDATE files SET playCount = NULL, lastPlayed=NULL WHERE idFile = ?', (fileId,))
+        dbfile.commit()
+        dbfile.close()
+
+
+def vbkUpdate(action, fileId, dbtype):      			# Update / delete files from video bookmark table 
+
+        dbfile = openKodiDB(dbtype)                             # Open Kodi video database
+        
+        if action == 'delete':
+            if dbtype == 'mysql':
+                kcursor = dbfile.cursor()
+                kcursor.execute("DELETE from actor bookmark idFile = %s"% var1)
+                kcursor.close() 
+            else:
+                dbfile.execute('DELETE FROM bookmark  WHERE idFile = ?', (fileId,))
+        dbfile.commit()
+        dbfile.close()
  
 
 def checkKscleanDB():                                   #  Verify Kscleaner database
@@ -426,6 +507,19 @@ def checkKscleanDB():                                   #  Verify Kscleaner data
     except Exception as e:
         xbmc.log('KS Cleaner logging database check error.', xbmc.LOGERROR)
         printexception()
+
+
+def checkLocalDBs():                                    # Verifies local database files exist
+
+        dbtype = settings('dbtype')
+        mudbtype = settings('mudbtype')
+
+        if dbtype == 'local':
+            openKodiDB(dbtype, 'yes')
+
+        if mudbtype == 'local':
+            openKodiMuDB(dbtype, 'yes')
+
 
 
 def kgenlogUpdate(kgenlog, kdlog = 'Yes', dbfile = None):  #  Add logs to DB

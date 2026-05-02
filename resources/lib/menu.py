@@ -5,7 +5,7 @@ import os
 import xbmcaddon
 import xbmcvfs
 from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
-from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, settings, checkAnalysis
+from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, settings, checkAnalysis, checkLocalDBs
 from resources.lib.logs import displayGenLogs
 from resources.lib.tvshows import displayTvshows
 from resources.lib.movies import displayMovieMenu
@@ -15,6 +15,9 @@ from resources.lib.exports import selectExport
 from resources.lib.backup import selectBackups
 from resources.lib.vanalyze import vanalMenu
 from resources.lib.mutriggers import checkMuTriggers
+from resources.lib.maintenance import selectMaintenance
+from resources.lib.artwork import analyzeArtwork
+
 import mysql.connector
 
 from datetime import datetime
@@ -30,15 +33,20 @@ def displayMenu():                                              # Display menu
     menuitem3 = translate(30302)
     menuitem4 = translate(30303) 
     menuitem5 = translate(30304)
-    menuitem6 = translate(30317)
-    menuitem7 = translate(30305)
-    menuitem8 = translate(30338)
-    menuitem9 = translate(30339)    
+    menuitem6 = translate(30317)				# CSV Export
+    menuitem7 = translate(30305)				# Backup
+    menuitem8 = translate(30338)				# Video analyzer menu option
+    menuitem9 = translate(30339)    				# Music analyzer menu option
+    menuitem10 = translate(30617)    				# Maintenance
+    menuitem11 = translate(30436)    				# Video artwork validation
 
     while True:
         try:
             dbtype = settings('dbtype')
             mudbtype = settings('mudbtype')
+            dbbackups = settings('dbbackups')                    # Check database backup options
+            dbmaintenance = settings('dbmaintenance')		 # Check database maintenance options
+            vartworkv = settings('vartworkv')                    # Video artwork validation setting
             kvfile = openKodiDB(dbtype)                          # Open Kodi video database
             kmfile = openKodiMuDB(mudbtype)                      # Open Kodi music database
             kcursor = kmcursor = 0
@@ -92,12 +100,21 @@ def displayMenu():                                              # Display menu
 
             pselect.extend([menuitem8, menuitem9])               # Add analyzer menu options
 
+            if vartworkv == 'true':                              # Add video artwork validation
+                pselect.append(menuitem11)
+
             curpf = kcfile.execute('SELECT count (kgGenDat) FROM kscleanLog', )
             kslog = curpf.fetchone()[0]                          # Get logs from logging database
             if int(kslog) > -1:                                  # If logs in logging database
                 pselect.append(menuitem5)     
 
-            pselect.extend([menuitem6, menuitem7])
+            pselect.extend([menuitem6])
+
+            if dbbackups == 'true':
+                pselect.extend([menuitem7])                      # Add database backups if enabled in settings
+
+            if dbmaintenance == 'true':	
+                pselect.extend([menuitem10])                     # Add database maintenance if enabled in settings
 
             ddialog = xbmcgui.Dialog()    
             vdate = ddialog.select(translate(30306), pselect)
@@ -147,6 +164,10 @@ def displayMenu():                                              # Display menu
             selectBackups()
         elif menuitem8 in (pselect[vdate]):                      # Video analyze
             vanalMenu(dbtype)
+        elif menuitem10 in (pselect[vdate]):                     # Database maintenance
+            selectMaintenance()
+        elif menuitem11 in (pselect[vdate]):                     # Analyze artwork
+            analyzeArtwork(dbtype)
 
 
 def testdata():
@@ -178,6 +199,7 @@ def testdata():
 
 
 checkKscleanDB()                                                #  Check Kscleaner logging database
+checkLocalDBs()							# Check local database files exist
 checkAnalysis()                                                 #  Check old analysis files
 checkMuTriggers()                                               #  Check music database triggers
 displayMenu()                                                   #  Display main menu

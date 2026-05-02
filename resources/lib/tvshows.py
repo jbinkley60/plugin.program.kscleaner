@@ -5,7 +5,10 @@ import os
 import xbmcaddon
 import xbmcvfs
 from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
-from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature
+from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, settings, vftUpdate, vbkUpdate
+from resources.lib.artwork import getArtlist, checkArt, cleanArt
+from resources.lib.exports import exportData
+
 
 from datetime import datetime
 
@@ -35,7 +38,10 @@ def displayTvshows(dbtype):                                         # Display me
                     kgenlogUpdate(kgenlog)
                     pselect.append('Unknown TV show title for idShow:' + str(tvshow[0]))
                 else:
-                    pselect.append(str(tvshow[1]))                          
+                    pselect.append(str(tvshow[1])) 
+
+            xbmc.executebuiltin('Dialog.Close(all, true)')
+            xbmc.sleep(200)                         
  
             ddialog = xbmcgui.Dialog()    
             vdate = ddialog.select(translate(30306) + ' - ' + translate(30301), pselect)
@@ -85,7 +91,10 @@ def displaySeasons(sidshow, sname, dbtype):                         # Display me
                 #    pselect.append('Unknown season title for idSeason: ' + str(season[0]) +     \
                 #    ' season: ' + str(season[3]))
                 #else:
-                pselect.append('Season - ' + str(season[3]))                          
+                pselect.append('Season - ' + str(season[3]))
+
+            xbmc.executebuiltin('Dialog.Close(all, true)')
+            xbmc.sleep(200)                          
  
             ddialog = xbmcgui.Dialog()    
             vdate = ddialog.select(translate(30306) + ' - ' + translate(30321), pselect)
@@ -113,8 +122,11 @@ def displayEpisodes(sidshow, sseason, dbtype):                       # Display m
     while True:
         try:
             xbmc.log('KS Cleaner episode query: ' + str(sidshow) + ' ' + str(sseason), xbmc.LOGDEBUG)
-            kvfile = openKodiDB(dbtype)                                   # Open Kodi video database
-            pselect = ['Delete All Episodes']
+            vartworkv = settings('vartworkv')                        # Video artwork validation setting
+            detailedlog = settings('vavdetailed')                    # Detailed logging flag
+            kvfile = openKodiDB(dbtype)                              # Open Kodi video database
+            selectall = translate(30430) + translate(30322)
+            pselect = [selectall]
             equery = "select idEpisode, idFile, c00, c13 from episode WHERE idShow = ?     \
             and idSeason = ? ORDER BY CAST(c13 AS INTEGER) ASC"
             esquery = "select idEpisode, idFile, c00, c13 from episode WHERE idShow = %s    \
@@ -135,10 +147,13 @@ def displayEpisodes(sidshow, sseason, dbtype):                       # Display m
                 if len(episode[2]) < 1:                              # Handle blank TV Episode names
                     pselect.append(episode[3] + ' - ' + 'Unknown')
                 else:
-                    pselect.append(episode[3] + ' - ' + episode[2])                          
+                    pselect.append(episode[3] + ' - ' + episode[2])
+
+            xbmc.executebuiltin('Dialog.Close(all, true)')
+            xbmc.sleep(200)                         
  
             ddialog = xbmcgui.Dialog()    
-            vdate = ddialog.multiselect(translate(30306) + ' - ' + translate(30322), pselect)  
+            vdate = ddialog.multiselect(translate(30306) + ' - ' + translate(30406) + translate(30322), pselect)  
             kvfile.close()
         except Exception as e:
             xbmc.log('KS Cleaner TV Episodes menu error. ', xbmc.LOGERROR)
@@ -150,8 +165,105 @@ def displayEpisodes(sidshow, sseason, dbtype):                       # Display m
             perfdialog.ok(translate(30308), dialog_text)
             break            
 
+        selections = []
         if vdate == None:                                           # User cancel
-            break      
-        else:                                                       # Episodes selected
-            xbmc.log('Kodi selective cleaner episode selection is: ' + str(vdate), xbmc.LOGDEBUG)
+            break
+        elif 0 in vdate:
+            for x in range(0, len(kepisodes)):
+                #xbmc.log('KS Cleaner Episode loop: ' + str(x), xbmc.LOGINFO)
+                episode_info = kepisodes[x]
+                selections.append(episode_info)
+            xbmc.log('KS Cleaner Episode Selection: ' + str(selections), xbmc.LOGDEBUG)
+        else:
+            for x in vdate:
+                episode_info = kepisodes[x-1]
+                selections.append(episode_info)
+            xbmc.log('KS Cleaner Episode Selections: ' + str(selections), xbmc.LOGDEBUG)    
+
+        xbmc.executebuiltin('Dialog.Close(all, true)')
+        xbmc.sleep(200)
+
+        menuitem1 = translate(30432)                               # Clear Bookmark
+        menuitem2 = translate(30433)                               # Set to Not Played
+        menuitem3 = translate(30434)                               # Set to Played
+        menuitem4 = translate(30435)                               # Remove from Kodi DB
+        menuitem5 = translate(30436)                               # Video Artwork Validation
+
+        moptions = [menuitem1, menuitem2, menuitem3, menuitem4]
+        if vartworkv == 'true':                                    # Video artwork validation setting enabled
+            moptions.append(menuitem5)
+        ddialog = xbmcgui.Dialog()
+        itemcount = len(selections)
+        dialogheader = translate(30322).rstrip('s') + ' '  + translate(30431) + ' - ' + str(itemcount) + ' '   \
+        + translate(30322) + translate(30452)
+        mselect = ddialog.select(dialogheader, moptions)
+        if mselect < 0:                                           # User cancel
+            xbmc.executebuiltin('Dialog.Close(all, true)')
+            xbmc.sleep(200)
+            break
+        elif menuitem1 in moptions[mselect]:
+            msg = translate(30437)				  # Bookmark cleared for
+            for episode in selections:
+                vbkUpdate('delete', episode[1], dbtype)
+                kgenlogUpdate(msg +  'episode: ' + str(episode[2]), 'No') 
+            episodeSuccess(dialogheader, itemcount, msg)
+        elif menuitem2 in moptions[mselect]:
+            msg = translate(30438)				  # Playcount set to 0 for 
+            for episode in selections:
+                vftUpdate('playcount', episode[1], dbtype, 0)
+                kgenlogUpdate(msg +  'episode: ' + str(episode[2]), 'No')
+            episodeSuccess(dialogheader, itemcount, msg)
+        elif menuitem3 in moptions[mselect]:
+            msg = translate(30439)				  # Playcount set to 1 for 
+            for episode in selections:
+                vftUpdate('playcount', episode[1], dbtype, 1)
+                kgenlogUpdate(msg +  'episode: ' + str(episode[2]), 'No')
+            episodeSuccess(dialogheader, itemcount, msg)
+        elif menuitem5 in moptions[mselect]:
+
+            xbmc.executebuiltin('Dialog.Close(all, true)')
+            xbmc.sleep(200)
+
+            afunction = []
+            menuitem1 = translate(30442)                       # Analyze artwork
+            menuitem2 = translate(30354)                       # Analyze / CSV Export
+            menuitem3 = translate(30443)                       # Analyze / Clean artwork
+
+            xbmc.executebuiltin('Dialog.Close(all, true)')
+            xbmc.sleep(200)
+
+            selectfn = [menuitem1, menuitem2, menuitem3]
+            ddialog = xbmcgui.Dialog()    
+            #sfunction = ddialog.select(translate(30306) + ' - ' + translate(30356), selectfn)
+            sfunction = ddialog.select(translate(30436) + ' - ' + translate(30356), selectfn)
+            xbmc.log('KS Cleaner Episode Function selection: ' + selectfn[sfunction], xbmc.LOGDEBUG)     
+            if sfunction < 0:                                  # User cancel
+                return
+            elif menuitem1 in selectfn[sfunction]:
+                xbmc.log('KS Cleaner Episode Artwork Validation: ' + str(selections), xbmc.LOGDEBUG)                   
+                arturls = getArtlist(dbtype, 'episode', selections, 'yes')
+                #xbmc.log('KS Cleaner Episode Artwork Validation URLs: ' + str(arturls), xbmc.LOGDEBUG)      
+                checkArt(arturls, detailedlog)
+            elif menuitem2 in selectfn[sfunction]:
+                arturls = getArtlist(dbtype, 'episode', selections, 'yes')
+                checkArt(arturls, detailedlog, 'yes')
+                exportData(['art_temp'], 'artanalyzer', 'episode')
+            elif menuitem3 in selectfn[sfunction]: 
+                arturls = getArtlist(dbtype, 'episode', selections, 'yes')
+                checkArt(arturls, detailedlog, 'yes')
+                cleanArt(dbtype)      
+ 
+        else:
             nofeature()
+
+
+def episodeSuccess(dialogheader, itemcount, msg):                            # Display success dialog box
+
+            xbmc.executebuiltin('Dialog.Close(all, true)')
+            xbmc.sleep(200)
+
+            perfdialog = xbmcgui.Dialog()
+            dialog_text = translate(30322).rstrip('s') + ' '  + translate(30431) + msg + ' ' + str(itemcount) + \
+            ' ' + translate(30322).lower()
+            perfdialog.ok(dialogheader, dialog_text)
+
