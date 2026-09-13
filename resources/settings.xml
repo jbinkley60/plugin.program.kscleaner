@@ -15,6 +15,18 @@
 						<popup>false</popup>
 					</control>
 				</setting>
+				<setting id="dbmode" type="string" label="30458" help="30625">
+					<level>0</level>
+					<default>Auto</default>
+					<constraints>
+						<options>
+							<option label="Auto">Auto</option>
+							<option label="Default">Default</option>
+							<option label="Manual">Manual</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
 				<setting id="dbtype" type="string" label="30367" help="30601">
 					<level>0</level>
 					<default>local</default>
@@ -39,10 +51,11 @@
 				</setting>
 				<setting id="dbvidname" type="string" label="30377" help="30603">
 					<level>0</level>
-					<default>Default</default>
+					<default>None</default>
 					<dependencies>
 						<dependency type="enable" setting="dbtype">mysql</dependency>
                                                 <dependency type="visible" setting="dbtype">mysql</dependency>
+						<dependency type="visible" setting="dbmode">Manual</dependency>
 					</dependencies>
 					<control type="edit" format="string">
 						<heading>30377</heading>
@@ -50,9 +63,10 @@
 				</setting>
 				<setting id="dbmusname" type="string" label="30378" help="30604">
 					<level>0</level>
-					<default>Default</default>
+					<default>None</default>
 					<dependencies>
 						<dependency type="enable" setting="mudbtype">mysql</dependency>
+						<dependency type="visible" setting="dbmode">Manual</dependency>
 						<dependency type="visible" setting="mudbtype">mysql</dependency>
 					</dependencies>
 					<control type="edit" format="string">
@@ -61,9 +75,10 @@
 				</setting>
 				<setting id="dblvidname" type="string" label="30456" help="30623">
 					<level>0</level>
-					<default>Default</default>
+					<default>None</default>
 					<dependencies>
 						<dependency type="enable" setting="dbtype">local</dependency>
+						<dependency type="visible" setting="dbmode">Manual</dependency>
 						<dependency type="visible" setting="dbtype">local</dependency>
 					</dependencies>
 					<control type="edit" format="string">
@@ -72,9 +87,10 @@
 				</setting>
 				<setting id="dblmusname" type="string" label="30457" help="30624">
 					<level>0</level>
-					<default>Default</default>
+					<default>None</default>
 					<dependencies>
 						<dependency type="enable" setting="mudbtype">local</dependency>
+						<dependency type="visible" setting="dbmode">Manual</dependency>
 						<dependency type="visible" setting="mudbtype">local</dependency>
 					</dependencies>
 					<control type="edit" format="string">
@@ -101,6 +117,44 @@
 					</constraints>
 					<control type="spinner" format="string"/>
 				</setting>
+				<setting id="autovideodb" type="string" label="30459" help="">
+					<level>0</level>
+					<default>None</default>
+					<dependencies>
+						<dependency type="visible">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>30388</heading>
+					</control>
+				</setting>
+				<setting id="automusicdb" type="string" label="30459" help="">
+					<level>0</level>
+					<default>None</default>
+					<dependencies>
+						<dependency type="visible">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>30388</heading>
+					</control>
+				</setting>
+				<setting id="autotexturesdb" type="string" label="30459" help="">
+					<level>0</level>
+					<default>None</default>
+					<dependencies>
+						<dependency type="visible">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>30388</heading>
+					</control>
+				</setting>
+
+
 
 			</group>
 		</category>

@@ -4,7 +4,7 @@ import xbmcplugin
 import os
 import xbmcaddon
 import xbmcvfs
-from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate
+from resources.lib.common import openKodiDB, openKodiMuDB, openKscleanDB, printexception, translate, checkKodiAutoDBs
 from resources.lib.common import kgenlogUpdate, checkKscleanDB, nofeature, settings, checkAnalysis, checkLocalDBs
 from resources.lib.logs import displayGenLogs
 from resources.lib.tvshows import displayTvshows
@@ -199,7 +199,8 @@ def testdata():
 
 
 checkKscleanDB()                                                #  Check Kscleaner logging database
-checkLocalDBs()							# Check local database files exist
+checkKodiAutoDBs()                                              # Autodetect Kodi database names
+checkLocalDBs()							#  Check local database files exist
 checkAnalysis()                                                 #  Check old analysis files
 checkMuTriggers()                                               #  Check music database triggers
 displayMenu()                                                   #  Display main menu

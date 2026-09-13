@@ -648,6 +648,13 @@ msgctxt "#30457"
 msgid "Local Music Database Name"
 msgstr ""
 
+msgctxt "#30458"
+msgid "Kodi Database Selection Mode"
+msgstr ""
+
+msgctxt "#30459"
+msgid "Hidden variable"
+msgstr ""
 
 msgctxt "#30600"
 msgid "Select the number of database backups to keep.  The range is 1-20.  10 is the default. 0 is no limit."
@@ -749,3 +756,6 @@ msgctxt "#30624"
 msgid "Enter a new value for your local Kodi music DB file name to override the default.  This is normally left default except during alpha and beta testing. See the KS Cleaner Wiki for more details"
 msgstr ""
 
+msgctxt "#30625"
+msgid "This option selects how the Kodi databae numbers are identified.  Automatic is for Kodi 22 and higher and will be determined by Kodi.  Default is set by the Mezzmo Kodi addon default setting.  Manual allows you to assign your own database number. Auto is the default setting."
+msgstr ""

@@ -43,49 +43,116 @@ def get_installedversion():
 
 
 def getDatabaseName(dbtype):
-    installed_version = get_installedversion()
+    dbmode = settings('dbmode')
+    autovideodb = settings('autovideodb')
+    dbvidname = settings('dbvidname')
+    dblvidname = settings('dblvidname')
+
+    if dbvidname == 'Default' or dblvidname == 'Default':
+        settings('dbmode', 'Default')
+        settings('dbvidname', 'None')
+        settings('dblvidname', 'None')
+
+    if dbmode == "Auto" and autovideodb != 'None':
+        if dbtype == 'local':
+            return autovideodb + '.db'
+        elif dbtype == 'mysql':
+            return autovideodb
+    elif dbmode == "Manual":
+        if dbtype == 'local':
+            return dblvidname
+        elif dbtype == 'mysql':
+            return dbvidname
+
+    installed_version = get_installedversion()                                   # Default values
     if installed_version == '19' and dbtype == 'local':
         return "MyVideos119.db"
     elif installed_version == '19' and dbtype == 'mysql':
-        return "119"
+        return "MyVideos119"
     elif installed_version == '20'  and dbtype == 'local':
         return "MyVideos121.db"
     elif installed_version == '20' and dbtype == 'mysql':
-        return "121"
+        return "MyVideos121"
     elif installed_version == '21'  and dbtype == 'local':
         return "MyVideos131.db"
     elif installed_version == '21' and dbtype == 'mysql':
-        return "131"
+        return "MyVideos131"
     elif installed_version == '22'  and dbtype == 'local':
-        return "MyVideos144.db"
+        return "MyVideos149.db"
     elif installed_version == '22' and dbtype == 'mysql':
-        return "144"
+        return "MyVideos149"
        
     return "" 
 
 
+def checkKodiAutoDBs():
+
+    try:
+        autovideodb = xbmc.getDatabaseName('videos')
+        automusicdb = xbmc.getDatabaseName('music')
+        autotexturesdb = xbmc.getDatabaseName('textures')
+        dbmode = settings('dbmode')
+        kgenlog = 'KSCleaner autodetected Kodi databases: ' + autovideodb + ', ' + automusicdb + ', ' +   \
+        autotexturesdb
+        kgenlogUpdate(kgenlog, 'Yes')
+        settings('autovideodb', autovideodb)
+        settings('automusicdb', automusicdb)
+        settings('autotexturesdb', autotexturesdb)
+    except:
+        kgenlogUpdate('KSCleaner did not automatically detect databases with this version of Kodi', 'yes')
+        settings('autovideodb', 'None')
+        settings('automusicdb', 'None')
+        settings('autotexturesdb', 'None')
+        settings('dbmode', 'Default')
+        dbmode = 'Default'
+
+
 def getmuDatabaseName(dbtype):
-    installed_version = get_installedversion()
+    dbmode = settings('dbmode')
+    automusicdb = settings('automusicdb')
+    dbmusname = settings('dbmusname')
+    dblmusname = settings('dblmusname')
+
+    if dbmusname == 'Default' or dblmusname == 'Default':
+        settings('dbmode', 'Default')
+        settings('dbmusname', 'None')
+        settings('dblmusname', 'None')
+
+    if dbmode == "Auto" and automusicdb != 'None':
+        if dbtype == 'local':
+            return automusicdb + '.db'
+        elif dbtype == 'mysql':
+            return automusicdb
+    elif dbmode == "Manual":
+        if dbtype == 'local':
+            return dblmusname
+        elif dbtype == 'mysql':
+            return dbmusname
+
+    installed_version = get_installedversion()                                   # Default values
     if installed_version == '19' and dbtype == 'local':
         return "MyMusic82.db"
     elif installed_version == '19' and dbtype == 'mysql':
-        return "82"
+        return "MyMusic82"
     elif installed_version == '20'  and dbtype == 'local':
         return "MyMusic82.db"
     elif installed_version == '20' and dbtype == 'mysql':
-        return "82"
+        return "MyMusic82"
     elif installed_version == '21'  and dbtype == 'local':
         return "MyMusic83.db"
     elif installed_version == '21' and dbtype == 'mysql':
-        return "83"
+        return "MyMusic83"
     elif installed_version == '22'  and dbtype == 'local':
         return "MyMusic84.db"
     elif installed_version == '22' and dbtype == 'mysql':
-        return "84"         
+        return "MyMusic84"         
     return ""  
 
 
 def getteDatabaseName():
+
+    if settings('dbmode') == "Auto" and settings('autotexturesdb') != 'None':
+        return settings('autotexturesdb') + '.db'
     installed_version = get_installedversion()
     if installed_version == '19':
         return "Textures13.db"
@@ -146,13 +213,14 @@ def parseConfig(config_file, database, dbtype):
             dbname = None 
             if vconfig.find('name') != None:
                 dbname = vconfig.find('name').text
-            dbver = getDatabaseName(dbtype)
-            if settings('dbvidname') != 'Default':
-                dbname = settings('dbvidname') 
-            elif dbname != None:
-                dbname = dbname + dbver
             else:
-                dbname = 'MyVideos' + dbver
+                dbname = getDatabaseName(dbtype)
+            #if settings('dbvidname') != 'Default':
+            #    dbname = settings('dbvidname') 
+            #elif dbname != None:
+            #    dbname = dbname + dbver
+            #else:
+            #    dbname = 'MyVideos' + dbver
             xbmc.log('KS Cleaner parse:' + ' ' + type + ' ' + host + ' ' + port + ' ' + user + ' ' \
             + passw + ' ' + dbname , xbmc.LOGDEBUG)
             config = {
@@ -206,13 +274,14 @@ def parseConfig(config_file, database, dbtype):
             dbname = None  
             if mconfig.find('name') != None:
                 dbname = mconfig.find('name').text
-            dbver = getmuDatabaseName(dbtype)
-            if settings('dbmusname') != 'Default':
-                dbname = settings('dbmusname') 
-            elif dbname != None:
-                dbname = dbname + dbver
             else:
-                dbname = 'MyMusic' + dbver
+                dbname = getmuDatabaseName(dbtype)
+            #if settings('dbmusname') != 'Default':
+            #    dbname = settings('dbmusname') 
+            #elif dbname != None:
+            #    dbname = dbname + dbver
+            #else:
+            #    dbname = 'MyMusic' + dbver
             xbmc.log('KS Cleaner parse:' + ' ' + type + ' ' + host + ' ' + port + ' ' + user + ' ' \
             + passw + ' ' + dbname , xbmc.LOGDEBUG)
             config = {
@@ -379,7 +448,7 @@ def openKodiMuDB(dbtype, logging = 'no'):                  #  Open Kodi music da
             xbmcgui.Dialog().ok(translate(30308), translate(30373))
 
 
-def openKodiTeDB():                                  #  Open Kodi textures database
+def openKodiTeDB(logging = 'no'):                      #  Open Kodi textures database
     try:
         from sqlite3 import dbapi2 as sqlite
     except:
@@ -393,7 +462,7 @@ def openKodiTeDB():                                  #  Open Kodi textures datab
          kgenlogUpdate(kgenlog)
          xbmcgui.Dialog().ok(translate(30308), translate(30455) + " \n" + dbname)
          sys.exit()
-    else:
+    elif logging.lower() == 'yes':
          kgenlog = "KS Cleaner Kodi textures database found: " + dbname
          kgenlogUpdate(kgenlog)
     db = sqlite.connect(DB)
@@ -519,6 +588,8 @@ def checkLocalDBs():                                    # Verifies local databas
 
         if mudbtype == 'local':
             openKodiMuDB(dbtype, 'yes')
+
+        openKodiTeDB('yes')
 
 
 

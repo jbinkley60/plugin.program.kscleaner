@@ -74,9 +74,11 @@
 - Updated support for Kodi 22 Piers Alpha 1 release
 - Added the ability to export the video database rating table
 1.0.10
-- Updated support for Kodi 22 Piers Alpha 3 release
 - Added database maintenance section to view stats, reindex and vacuum Kodi databases
 - Added setting for automatic database backup reminders
+- Updated support for Kodi 22 Beta 2 release
+- Added database detection setting to support automatically detecting database versions beginning with Kodi 22
+
 
 
   
